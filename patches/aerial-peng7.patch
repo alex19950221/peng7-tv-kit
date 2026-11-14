@@ -1,5 +1,5 @@
 diff --git a/app/build.gradle.kts b/app/build.gradle.kts
-index d04a44b..9616d01 100644
+index d04a44b6cd60b61253d666e3920930a7d2f37db4..f4dd3a3434669d5d7f94226c7d24cf2f8664fb3c 100644
 --- a/app/build.gradle.kts
 +++ b/app/build.gradle.kts
 @@ -19,8 +19,10 @@ android {
@@ -8,15 +8,314 @@ index d04a44b..9616d01 100644
          targetSdk = 34
 -        versionCode = 135
 -        versionName = "1.95"
-+        versionCode = 136
-+        versionName = "1.95-peng7.1"
++        versionCode = 137
++        versionName = "1.95-peng7.2-alpha.1"
 +        // Household build: its signing key and update channel differ from upstream.
 +        buildConfigField("boolean", "LOCAL_EDITION", "true")
          // `./gradlew -Pdiag ...`: a build for one reporter's TV whose logcat shows no app lines;
          // see system/DiagLog.kt.
          val diag = project.hasProperty("diag")
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 84d349d514104c627eb9baec9dd252c21e3a79f7..cf6688f1d6cd9d630ec71cd00845c10a9d4072eb 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -115,6 +115,11 @@
+             </intent-filter>
+         </activity>
+ 
++        <activity
++            android:name=".BeginnerActivity"
++            android:exported="false"
++            android:screenOrientation="landscape" />
++
+         <provider
+             android:name="androidx.core.content.FileProvider"
+             android:authorities="${applicationId}.files"
+diff --git a/app/src/main/assets/licenses/AERIAL-LICENSE.txt b/app/src/main/assets/licenses/AERIAL-LICENSE.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..4cec4ee355a54271d06034fb661cffd14432e6d6
+--- /dev/null
++++ b/app/src/main/assets/licenses/AERIAL-LICENSE.txt
+@@ -0,0 +1,21 @@
++MIT License
++
++Copyright (c) 2026 pengchujin
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/app/src/main/assets/licenses/FONT-LICENSE-OFL.txt b/app/src/main/assets/licenses/FONT-LICENSE-OFL.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..21f6aff961064c2e429f570995e446bcdd555422
+--- /dev/null
++++ b/app/src/main/assets/licenses/FONT-LICENSE-OFL.txt
+@@ -0,0 +1,93 @@
++Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
++
++This Font Software is licensed under the SIL Open Font License, Version 1.1.
++This license is copied below, and is also available with a FAQ at:
++https://scripts.sil.org/OFL
++
++
++-----------------------------------------------------------
++SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
++-----------------------------------------------------------
++
++PREAMBLE
++The goals of the Open Font License (OFL) are to stimulate worldwide
++development of collaborative font projects, to support the font creation
++efforts of academic and linguistic communities, and to provide a free and
++open framework in which fonts may be shared and improved in partnership
++with others.
++
++The OFL allows the licensed fonts to be used, studied, modified and
++redistributed freely as long as they are not sold by themselves. The
++fonts, including any derivative works, can be bundled, embedded, 
++redistributed and/or sold with any software provided that any reserved
++names are not used by derivative works. The fonts and derivatives,
++however, cannot be released under any other type of license. The
++requirement for fonts to remain under this license does not apply
++to any document created using the fonts or their derivatives.
++
++DEFINITIONS
++"Font Software" refers to the set of files released by the Copyright
++Holder(s) under this license and clearly marked as such. This may
++include source files, build scripts and documentation.
++
++"Reserved Font Name" refers to any names specified as such after the
++copyright statement(s).
++
++"Original Version" refers to the collection of Font Software components as
++distributed by the Copyright Holder(s).
++
++"Modified Version" refers to any derivative made by adding to, deleting,
++or substituting -- in part or in whole -- any of the components of the
++Original Version, by changing formats or by porting the Font Software to a
++new environment.
++
++"Author" refers to any designer, engineer, programmer, technical
++writer or other person who contributed to the Font Software.
++
++PERMISSION & CONDITIONS
++Permission is hereby granted, free of charge, to any person obtaining
++a copy of the Font Software, to use, study, copy, merge, embed, modify,
++redistribute, and sell modified and unmodified copies of the Font
++Software, subject to the following conditions:
++
++1) Neither the Font Software nor any of its individual components,
++in Original or Modified Versions, may be sold by itself.
++
++2) Original or Modified Versions of the Font Software may be bundled,
++redistributed and/or sold with any software, provided that each copy
++contains the above copyright notice and this license. These can be
++included either as stand-alone text files, human-readable headers or
++in the appropriate machine-readable metadata fields within text or
++binary files as long as those fields can be easily viewed by the user.
++
++3) No Modified Version of the Font Software may use the Reserved Font
++Name(s) unless explicit written permission is granted by the corresponding
++Copyright Holder. This restriction only applies to the primary font name as
++presented to the users.
++
++4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
++Software shall not be used to promote, endorse or advertise any
++Modified Version, except to acknowledge the contribution(s) of the
++Copyright Holder(s) and the Author(s) or with their explicit written
++permission.
++
++5) The Font Software, modified or unmodified, in part or in whole,
++must be distributed entirely under this license, and must not be
++distributed under any other license. The requirement for fonts to
++remain under this license does not apply to any document created
++using the Font Software.
++
++TERMINATION
++This license becomes null and void if any of the above conditions are
++not met.
++
++DISCLAIMER
++THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
++MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
++OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
++COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
++DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
++OTHER DEALINGS IN THE FONT SOFTWARE.
+diff --git a/app/src/main/java/app/orchard/tv/BeginnerActivity.kt b/app/src/main/java/app/orchard/tv/BeginnerActivity.kt
+new file mode 100644
+index 0000000000000000000000000000000000000000..660faf456daef3f64bca3dd1cce293d5dd8d49a2
+--- /dev/null
++++ b/app/src/main/java/app/orchard/tv/BeginnerActivity.kt
+@@ -0,0 +1,151 @@
++package app.orchard.tv
++
++import android.content.Intent
++import android.os.Bundle
++import android.widget.Toast
++import androidx.activity.ComponentActivity
++import androidx.activity.compose.BackHandler
++import androidx.activity.compose.setContent
++import androidx.compose.foundation.background
++import androidx.compose.foundation.layout.*
++import androidx.compose.foundation.rememberScrollState
++import androidx.compose.foundation.text.BasicText
++import androidx.compose.foundation.verticalScroll
++import androidx.compose.runtime.*
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.focus.FocusRequester
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.platform.LocalDensity
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.unit.Density
++import androidx.compose.ui.unit.dp
++import androidx.compose.ui.unit.sp
++import androidx.core.view.WindowCompat
++import androidx.core.view.WindowInsetsCompat
++import app.orchard.tv.guard.GuardSetup
++import app.orchard.tv.settings.BeginnerSetup
++import app.orchard.tv.settings.AerialSettings
++import app.orchard.tv.settings.Restricted
++import app.orchard.tv.system.SystemProbe
++import app.orchard.tv.ui.home.MenuRow
++import app.orchard.tv.ui.theme.Glyph
++import app.orchard.tv.ui.theme.Type
++import app.orchard.tv.ui.theme.canvasDensity
++
++/** Remote-first setup and recovery. It never grants permissions or installs other apps. */
++class BeginnerActivity : ComponentActivity() {
++    private var revision by mutableIntStateOf(0)
++
++    override fun onResume() { super.onResume(); revision++ }
++
++    override fun onCreate(savedInstanceState: Bundle?) {
++        super.onCreate(savedInstanceState)
++        AerialSettings.init(this)
++        Restricted.init(this)
++        if (AerialSettings.locked || Restricted.active) {
++            finish()
++            return
++        }
++        WindowCompat.setDecorFitsSystemWindows(window, false)
++        WindowCompat.getInsetsController(window, window.decorView).hide(WindowInsetsCompat.Type.systemBars())
++        BeginnerSetup.rememberOriginalHome(this)
++        setContent {
++            val density = Density(canvasDensity(resources.displayMetrics), LocalDensity.current.fontScale)
++            CompositionLocalProvider(LocalDensity provides density) {
++                var page by remember { mutableIntStateOf(if (BeginnerSetup.completed(this)) 1 else 0) }
++                val authorized = remember(revision) { BeginnerSetup.authorized(this) }
++                val guardPage = remember { SystemProbe.guardSettingsIntent(this) }
++                val first = remember(page) { FocusRequester() }
++                LaunchedEffect(page, authorized) { withFrameNanos { }; runCatching { first.requestFocus() } }
++                BackHandler {
++                    when (page) { 0 -> finish(); 1 -> page = 0; else -> page = 1 }
++                }
++                Row(Modifier.fillMaxSize().background(Color(0xFF101621)).padding(44.dp), horizontalArrangement = Arrangement.spacedBy(40.dp)) {
++                    Column(Modifier.weight(1f)) {
++                        BasicText(stringResource(R.string.beginner_title), style = Type.Body.copy(fontSize = 30.sp))
++                        Spacer(Modifier.height(20.dp))
++                        BasicText(stringResource(R.string.beginner_intro), style = Type.Body)
++                        Spacer(Modifier.height(24.dp))
++                        BasicText(BeginnerSetup.deviceSummary(), style = Type.Caption)
++                        Spacer(Modifier.height(16.dp))
++                        BasicText(stringResource(R.string.beginner_compatibility), style = Type.Caption)
++                        Spacer(Modifier.height(16.dp))
++                        BasicText(BuildConfig.VERSION_NAME, style = Type.Caption)
++                    }
++                    Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) {
++                        when (page) {
++                            0 -> {
++                                BasicText(stringResource(R.string.beginner_detected), style = Type.Body)
++                                Spacer(Modifier.height(16.dp))
++                                BasicText(stringResource(R.string.beginner_remote), style = Type.Caption)
++                                Spacer(Modifier.height(24.dp))
++                                MenuRow(Glyph.Shield, stringResource(R.string.beginner_continue), focusRequester = first, onClick = { page = 1 })
++                                MenuRow(Glyph.ChevronLeft, stringResource(R.string.beginner_exit), onClick = { finish() })
++                            }
++                            1 -> {
++                                BasicText(stringResource(R.string.beginner_guard_title), style = Type.Body)
++                                Spacer(Modifier.height(12.dp))
++                                BasicText(stringResource(if (authorized) R.string.beginner_authorized else R.string.beginner_guard_body), style = Type.Caption)
++                                Spacer(Modifier.height(16.dp))
++                                if (authorized) {
++                                    MenuRow(Glyph.Check, stringResource(R.string.beginner_enter), focusRequester = first, onClick = {
++                                        BeginnerSetup.finish(this@BeginnerActivity)
++                                        GuardSetup.ensureEnabled(this@BeginnerActivity)
++                                        enterHome()
++                                    })
++                                } else if (guardPage != null) {
++                                    MenuRow(Glyph.Shield, stringResource(R.string.beginner_authorize), focusRequester = first, onClick = {
++                                        BeginnerSetup.prepareGuard(this@BeginnerActivity)
++                                        open(guardPage)
++                                    })
++                                } else {
++                                    BasicText(stringResource(R.string.beginner_missing_page), style = Type.Caption)
++                                    Spacer(Modifier.height(12.dp))
++                                }
++                                MenuRow(Glyph.Play, stringResource(R.string.beginner_try_without),
++                                    focusRequester = if (!authorized && guardPage == null) first else null,
++                                    onClick = { BeginnerSetup.disableGuard(this@BeginnerActivity); enterHome() })
++                                MenuRow(Glyph.Gear, stringResource(R.string.beginner_recovery), onClick = { page = 2 })
++                                MenuRow(Glyph.ChevronLeft, stringResource(R.string.beginner_back), onClick = { page = 0 })
++                            }
++                            else -> {
++                                BasicText(stringResource(R.string.beginner_recovery), style = Type.Body)
++                                Spacer(Modifier.height(12.dp))
++                                BasicText(stringResource(R.string.beginner_recovery_body), style = Type.Caption)
++                                Spacer(Modifier.height(16.dp))
++                                MenuRow(Glyph.Shield, stringResource(R.string.beginner_disable), focusRequester = first, onClick = {
++                                    BeginnerSetup.disableGuard(this@BeginnerActivity)
++                                    revision++
++                                    Toast.makeText(this@BeginnerActivity, R.string.beginner_disabled, Toast.LENGTH_LONG).show()
++                                })
++                                BeginnerSetup.originalHomeIntent(this@BeginnerActivity)?.let { intent ->
++                                    MenuRow(Glyph.Play, stringResource(R.string.beginner_stock_home), onClick = {
++                                        BeginnerSetup.disableGuard(this@BeginnerActivity); open(intent); finish()
++                                    })
++                                }
++                                BeginnerSetup.homeSettingsIntent(this@BeginnerActivity)?.let { intent ->
++                                    MenuRow(Glyph.Gear, stringResource(R.string.beginner_home_settings), onClick = {
++                                        BeginnerSetup.disableGuard(this@BeginnerActivity); open(intent)
++                                    })
++                                }
++                                MenuRow(Glyph.Gear, stringResource(R.string.beginner_tv_settings), onClick = { open(SystemProbe.settingsIntent(this@BeginnerActivity)) })
++                                MenuRow(Glyph.ChevronLeft, stringResource(R.string.beginner_back), onClick = { page = 1 })
++                            }
++                        }
++                    }
++                }
++            }
++        }
++    }
++
++    private fun open(intent: Intent) {
++        runCatching { startActivity(intent) }.onFailure {
++            Toast.makeText(this, R.string.beginner_open_failed, Toast.LENGTH_LONG).show()
++        }
++    }
++
++    private fun enterHome() {
++        startActivity(Intent(this, MainActivity::class.java))
++        finish()
++    }
++}
 diff --git a/app/src/main/java/app/orchard/tv/HomeViewModel.kt b/app/src/main/java/app/orchard/tv/HomeViewModel.kt
-index 594fda9..4f8c579 100644
+index 594fda9a143b3bb6117ab83c200681cdd781c06c..4f8c57905ba6106c06afbbf034a033fa25e7fb16 100644
 --- a/app/src/main/java/app/orchard/tv/HomeViewModel.kt
 +++ b/app/src/main/java/app/orchard/tv/HomeViewModel.kt
 @@ -67,7 +67,7 @@ sealed interface Overlay {
@@ -29,10 +328,34 @@ index 594fda9..4f8c579 100644
  /**
   * Tiles a cold start reads whole before showing Home (two rows and a half, as many as can show);
 diff --git a/app/src/main/java/app/orchard/tv/MainActivity.kt b/app/src/main/java/app/orchard/tv/MainActivity.kt
-index 7031ca5..050221f 100644
+index 7031ca509643de706a8537705a411d30b1d1d6d8..6ffc6ac1192bdbe6504af239520039e05605e703 100644
 --- a/app/src/main/java/app/orchard/tv/MainActivity.kt
 +++ b/app/src/main/java/app/orchard/tv/MainActivity.kt
-@@ -1219,6 +1219,9 @@ class MainActivity : ComponentActivity() {
+@@ -257,6 +257,14 @@ class MainActivity : ComponentActivity() {
+      */
+     private fun startReal(savedInstanceState: Bundle?) {
+         if (realStarted) return
++        // An upgrade must never expose recovery around an existing parent PIN or restricted mode.
++        AerialSettings.init(this)
++        Restricted.init(this)
++        if (app.orchard.tv.settings.BeginnerSetup.needsGuide(this) && !AerialSettings.locked && !Restricted.active) {
++            startActivity(Intent(this, BeginnerActivity::class.java))
++            finish()
++            return
++        }
+         realStarted = true
+         val fromLocked = locked
+         if (locked) {
+@@ -281,8 +289,6 @@ class MainActivity : ComponentActivity() {
+         IconLibrary.init(this)
+         SourceLooks.init(this)
+         AppNames.init(this)
+-        AerialSettings.init(this)
+-        Restricted.init(this)
+         KidsWatch.start(this)
+         // After the settings: the artwork's size follows the number of apps a row.
+         TileArtFactory.useCanvasDensity(canvasDensity(resources.displayMetrics) * uhd)
+@@ -1219,6 +1225,9 @@ class MainActivity : ComponentActivity() {
      }
  
      private fun open(intent: Intent) {
@@ -42,9 +365,209 @@ index 7031ca5..050221f 100644
          FilmAfterInput.noteOpened(this, intent)
          if (intent.hasExtra("inputSrc")) allowInputThroughHome(intent)
          // Older Konka: the input first, then its page, which only shows what is on (issue #710).
+diff --git a/app/src/main/java/app/orchard/tv/guard/BootReceiver.kt b/app/src/main/java/app/orchard/tv/guard/BootReceiver.kt
+index d751f146e38306a4ff32a06a371b596679f5e678..9e558c66fa42480b7a64c512a56900f8929b5680 100644
+--- a/app/src/main/java/app/orchard/tv/guard/BootReceiver.kt
++++ b/app/src/main/java/app/orchard/tv/guard/BootReceiver.kt
+@@ -37,6 +37,7 @@ class BootReceiver : BroadcastReceiver() {
+     }
+ 
+     private fun onBoot(context: Context, action: String) {
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return
+         GuardSetup.ensureEnabled(context)
+         if (action == Intent.ACTION_LOCKED_BOOT_COMPLETED) return
+         GuardSetup.rescanIfMissing(context)
+diff --git a/app/src/main/java/app/orchard/tv/guard/GuardSetup.kt b/app/src/main/java/app/orchard/tv/guard/GuardSetup.kt
+index 95607bfa40a4036287eef9e21a0572bc7fac57c2..6dc244ea681b053cd105dbcd3666a4a8b3b0935f 100644
+--- a/app/src/main/java/app/orchard/tv/guard/GuardSetup.kt
++++ b/app/src/main/java/app/orchard/tv/guard/GuardSetup.kt
+@@ -226,6 +226,7 @@ object GuardSetup {
+      * launcher visit that Aerial's process does not outlast, as #1276's take-over already does.
+      */
+     fun startAfterStopOverStock(context: Context): Boolean {
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return false
+         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || HomeGuardService.isRunning) return false
+         if (SystemClock.elapsedRealtime() < 3 * 60_000L) return false
+         if (context.getSystemService<PowerManager>()?.isInteractive != true) return false
+@@ -436,6 +437,7 @@ object GuardSetup {
+      * makes Android bind it again.
+      */
+     fun rebindIfStalled(context: Context) {
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return
+         if (HomeGuardService.isRunning) return
+         rescanIfMissing(context)
+         if (standingOut(context)) { watchScreenOn(context); return }
+@@ -455,6 +457,7 @@ object GuardSetup {
+             // Two writes in a row are coalesced and Android sees no change; give it a moment between.
+             // Read the list again then, so a service another app added meanwhile is kept (#57).
+             Handler(Looper.getMainLooper()).postDelayed({
++                if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return@postDelayed
+                 runCatching {
+                     val now = Settings.Secure.getString(resolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES).orEmpty()
+                         .split(':').filter { it.isNotBlank() && ComponentName.unflattenFromString(it)?.flattenToString() != me }
+@@ -472,6 +475,7 @@ object GuardSetup {
+      * out of the list and put back, as rebindIfStalled does.
+      */
+     fun restartAccessibility(context: Context) {
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return
+         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) return
+         val resolver = context.contentResolver
+         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+@@ -481,6 +485,7 @@ object GuardSetup {
+             runCatching {
+                 Settings.Secure.putString(resolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, others().joinToString(":"))
+                 Handler(Looper.getMainLooper()).postDelayed({
++                    if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return@postDelayed
+                     runCatching { Settings.Secure.putString(resolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, (others() + me).joinToString(":")) }
+                         .onFailure { Log.w(TAG, "could not put Home Guard back", it) }
+                 }, 1500)
+@@ -684,6 +689,7 @@ object GuardSetup {
+     }
+ 
+     fun ensureEnabled(context: Context): Boolean {
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return false
+         ensureAdb(context)
+         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) return false
+         restoreReceivers(context)
+diff --git a/app/src/main/java/app/orchard/tv/guard/RevivalListener.kt b/app/src/main/java/app/orchard/tv/guard/RevivalListener.kt
+index 3166cf11ac6ce7cf84c4f03e42dfe696cc5a1ad1..b52f16772028f3f87bc03b476bed87f2951b8b94 100644
+--- a/app/src/main/java/app/orchard/tv/guard/RevivalListener.kt
++++ b/app/src/main/java/app/orchard/tv/guard/RevivalListener.kt
+@@ -55,6 +55,7 @@ class RevivalListener : NotificationListenerService() {
+ 
+     override fun onListenerConnected() {
+         if (destroyed) return
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(this)) return
+         // The line docs/HANDOFF.md and the issues look for after a kill (logcat -s AerialGuard).
+         Log.i("AerialGuard", "revived by the notification listener binding")
+         trace("notification listener connected")
+@@ -75,6 +76,7 @@ class RevivalListener : NotificationListenerService() {
+ 
+     private fun startRecovery(reason: String) {
+         if (destroyed || recovering) return
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(this)) return
+         recovering = true
+         attempt = 0
+         outcome = reason
+@@ -84,6 +86,10 @@ class RevivalListener : NotificationListenerService() {
+ 
+     private fun checkGuard() {
+         if (destroyed || !recovering) return
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(this)) {
++            finishRecovery("disabled by the owner")
++            return
++        }
+         if (HomeGuardService.isRunning) {
+             finishRecovery("guard bound")
+             return
+diff --git a/app/src/main/java/app/orchard/tv/guard/RevivalSync.kt b/app/src/main/java/app/orchard/tv/guard/RevivalSync.kt
+index 6f8126f534184490849c55da653b7ce384caad95..68aa68b4ef62c70f64532814dd67b8e2c1225bf1 100644
+--- a/app/src/main/java/app/orchard/tv/guard/RevivalSync.kt
++++ b/app/src/main/java/app/orchard/tv/guard/RevivalSync.kt
+@@ -37,6 +37,7 @@ object RevivalSync {
+     private const val AUTHORITY = "settings"
+ 
+     fun ensure(context: Context) {
++        if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return
+         // Accounts live in credential storage.
+         if (!GuardSetup.isUserUnlocked(context)) return
+         runCatching {
+@@ -62,6 +63,7 @@ class RevivalSyncService : Service() {
+ 
+     private class Adapter(context: Context) : AbstractThreadedSyncAdapter(context, false) {
+         override fun onPerformSync(account: Account, extras: Bundle, authority: String, provider: ContentProviderClient, result: SyncResult) {
++            if (!app.orchard.tv.settings.BeginnerSetup.mayRestoreGuard(context)) return
+             // Credential storage is still locked; the guard and the boot receiver catch up on unlock.
+             if (!GuardSetup.isUserUnlocked(context)) return
+             GuardSetup.ensureAdb(context)
+diff --git a/app/src/main/java/app/orchard/tv/settings/BeginnerSetup.kt b/app/src/main/java/app/orchard/tv/settings/BeginnerSetup.kt
+new file mode 100644
+index 0000000000000000000000000000000000000000..71d8f5e5ba44311da0e62f9eddc3f9b5c18a73e5
+--- /dev/null
++++ b/app/src/main/java/app/orchard/tv/settings/BeginnerSetup.kt
+@@ -0,0 +1,79 @@
++package app.orchard.tv.settings
++
++import android.content.ComponentName
++import android.content.Context
++import android.content.Intent
++import android.content.pm.PackageManager
++import android.os.Build
++import android.provider.Settings
++import app.orchard.tv.BuildConfig
++import app.orchard.tv.guard.GuardSetup
++import app.orchard.tv.guard.HomeGuardService
++
++/** Local onboarding choices, separate from the system's accessibility authorization. */
++object BeginnerSetup {
++    private const val PREFS = "beginner_setup"
++    private const val COMPLETE = "complete"
++    private const val GUARD = "guard_requested"
++    private const val ORIGINAL_HOME = "original_home"
++    private fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
++
++    fun completed(context: Context): Boolean = prefs(context).getBoolean(COMPLETE, false)
++    fun guardRequested(context: Context): Boolean = prefs(context).getBoolean(GUARD, true)
++    fun needsGuide(context: Context): Boolean = BuildConfig.LOCAL_EDITION && !completed(context)
++
++    // A fresh APK must not enable privileged recovery before the owner finishes setup.
++    // Legacy upstream behavior is unchanged outside this custom edition.
++    fun mayRestoreGuard(context: Context): Boolean = !BuildConfig.LOCAL_EDITION ||
++        (GuardSetup.isUserUnlocked(context) && completed(context) && guardRequested(context))
++
++    fun rememberOriginalHome(context: Context) {
++        if (prefs(context).contains(ORIGINAL_HOME)) return
++        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
++        val info = context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo
++        if (info != null && info.packageName != context.packageName && info.packageName != "android" &&
++            info.exported && info.enabled) {
++            prefs(context).edit().putString(ORIGINAL_HOME, ComponentName(info.packageName, info.name).flattenToString()).commit()
++        }
++    }
++
++    fun authorized(context: Context): Boolean {
++        val component = ComponentName(context, HomeGuardService::class.java)
++        val pm = context.packageManager
++        if (pm.getComponentEnabledSetting(component) == PackageManager.COMPONENT_ENABLED_STATE_DISABLED) return false
++        if (Settings.Secure.getInt(context.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED, 0) != 1) return false
++        return Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
++            .orEmpty().split(':').any { ComponentName.unflattenFromString(it) == component }
++    }
++
++    /** Re-enable only our own component. The system still owns the permission prompt. */
++    fun prepareGuard(context: Context) {
++        prefs(context).edit().putBoolean(GUARD, true).commit()
++        context.packageManager.setComponentEnabledSetting(ComponentName(context, HomeGuardService::class.java),
++            PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, PackageManager.DONT_KILL_APP)
++    }
++
++    fun finish(context: Context) {
++        check(authorized(context)) { "Accessibility authorization is still required" }
++        prefs(context).edit().putBoolean(COMPLETE, true).putBoolean(GUARD, true).commit()
++    }
++
++    /** Stop only our service; never rewrite another app's accessibility settings. */
++    fun disableGuard(context: Context) {
++        prefs(context).edit().putBoolean(COMPLETE, true).putBoolean(GUARD, false).commit()
++        context.packageManager.setComponentEnabledSetting(ComponentName(context, HomeGuardService::class.java),
++            PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
++    }
++
++    fun originalHomeIntent(context: Context): Intent? {
++        val component = prefs(context).getString(ORIGINAL_HOME, null)?.let(ComponentName::unflattenFromString) ?: return null
++        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setComponent(component)
++        val info = runCatching { context.packageManager.getActivityInfo(component, 0) }.getOrNull()
++        return intent.takeIf { info != null && info.enabled && info.exported && info.packageName != context.packageName }
++    }
++
++    fun homeSettingsIntent(context: Context): Intent? = Intent(Settings.ACTION_HOME_SETTINGS)
++        .takeIf { context.packageManager.resolveActivity(it, 0) != null }
++
++    fun deviceSummary(): String = "${Build.MANUFACTURER} ${Build.MODEL}\nAndroid ${Build.VERSION.RELEASE} / API ${Build.VERSION.SDK_INT}\n${Build.SUPPORTED_ABIS.joinToString() }"
++}
 diff --git a/app/src/main/java/app/orchard/tv/system/MediaShortcuts.kt b/app/src/main/java/app/orchard/tv/system/MediaShortcuts.kt
 new file mode 100644
-index 0000000..83a441a
+index 0000000000000000000000000000000000000000..83a441af7aed8bcdcc60671a0839ed671ce3abbc
 --- /dev/null
 +++ b/app/src/main/java/app/orchard/tv/system/MediaShortcuts.kt
 @@ -0,0 +1,64 @@
@@ -113,7 +636,7 @@ index 0000000..83a441a
 +    }.getOrDefault(false)
 +}
 diff --git a/app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt b/app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt
-index f06c2bb..0f59776 100644
+index f06c2bb8a43f0ec25450c6a5a83f56154131ce81..d09cbc73d9de3d94e43c1960b386a29526520140 100644
 --- a/app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt
 +++ b/app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt
 @@ -144,7 +144,7 @@ fun ControlCenter(
@@ -144,7 +667,16 @@ index f06c2bb..0f59776 100644
          Row(verticalAlignment = Alignment.Bottom) {
              Column(Modifier.weight(1f)) {
                  BasicText(timeText(now), style = Type.SmallClock.copy(fontSize = Type.LargeTitle.fontSize * 1.05f))
-@@ -382,6 +385,12 @@ private fun MainPage(
+@@ -377,11 +380,21 @@ private fun MainPage(
+             )
+         }
+         // How Home looks (wallpaper, screensaver, focus style, hidden apps, weather) lives in one place.
++        if (BuildConfig.LOCAL_EDITION) {
++            MenuRow(Glyph.Shield, stringResource(R.string.beginner_title),
++                onClick = { vm.whenUnlocked { onOpen(android.content.Intent(context, app.orchard.tv.BeginnerActivity::class.java)) } }, trailing = "›")
++        }
+         MenuRow(
+             Glyph.Photo,
              stringResource(R.string.cc_personalize),
              onClick = { vm.overlay = Overlay.Wallpaper },
          )
@@ -157,16 +689,27 @@ index f06c2bb..0f59776 100644
          // What the TV opens when switched on: easy to forget, and puzzling when it happens.
          vm.bootTargetLabel()?.let { name ->
              MenuRow(
-@@ -421,7 +430,7 @@ private fun MainPage(
-             Box(Modifier.size(7.dp).clip(CircleShape).background(dot))
-             Spacer(Modifier.width(8.dp))
-             BasicText(text, style = Type.Caption, modifier = Modifier.weight(1f))
+@@ -417,11 +430,14 @@ private fun MainPage(
+             HomeStatus.Guarded -> Palette.Green to stringResource(R.string.cc_home_guarded)
+             HomeStatus.NotDefault -> Palette.Orange to stringResource(R.string.cc_home_not_default)
+         }
+-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 14.dp)) {
+-            Box(Modifier.size(7.dp).clip(CircleShape).background(dot))
+-            Spacer(Modifier.width(8.dp))
+-            BasicText(text, style = Type.Caption, modifier = Modifier.weight(1f))
 -            BasicText("Aerial ${Updates.current}", style = Type.Caption.copy(color = Palette.TertiaryLabel), modifier = Modifier.padding(end = 14.dp))
-+            BasicText("Aerial ${BuildConfig.VERSION_NAME}", style = Type.Caption.copy(color = Palette.TertiaryLabel), modifier = Modifier.padding(end = 14.dp))
++        Column(Modifier.padding(horizontal = 14.dp)) {
++            Row(verticalAlignment = Alignment.CenterVertically) {
++                Box(Modifier.size(7.dp).clip(CircleShape).background(dot))
++                Spacer(Modifier.width(8.dp))
++                BasicText(text, style = Type.Caption, modifier = Modifier.weight(1f))
++            }
++            BasicText("Aerial ${BuildConfig.VERSION_NAME}", style = Type.Caption.copy(color = Palette.TertiaryLabel),
++                modifier = Modifier.padding(top = 4.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
          }
      }
  }
-@@ -598,9 +607,11 @@ private fun SetupPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.co
+@@ -598,9 +614,11 @@ private fun SetupPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.co
      val revival = remember { SystemProbe.revivalSettingsIntent(context) }
      var qr by remember { mutableStateOf<ImageBitmap?>(null) }
      LaunchedEffect(Unit) {
@@ -181,7 +724,7 @@ index f06c2bb..0f59776 100644
      }
      Column {
          MenuRow(Glyph.ChevronLeft, stringResource(R.string.cc_setup_title), focusRequester = first, onClick = { vm.overlay = Overlay.ControlCenter(CcPage.Main) })
-@@ -608,7 +619,10 @@ private fun SetupPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.co
+@@ -608,7 +626,10 @@ private fun SetupPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.co
          guard?.let { MenuRow(Glyph.Shield, stringResource(R.string.cc_setup_guard), onClick = { vm.whenUnlocked { onOpen(it) } }, trailing = stringResource(R.string.cc_setup_guard_where) + " ›") }
          home?.let { MenuRow(Glyph.Check, stringResource(R.string.cc_setup_home), onClick = { vm.whenUnlocked { onOpen(it) } }, trailing = "›") }
          revival?.let { MenuRow(Glyph.Moon, stringResource(R.string.cc_setup_revival), onClick = { vm.whenUnlocked { onOpen(it) } }, trailing = stringResource(R.string.cc_setup_revival_where) + " ›") }
@@ -195,7 +738,7 @@ index f06c2bb..0f59776 100644
              }
 diff --git a/app/src/main/java/app/orchard/tv/ui/control/MediaToolsPage.kt b/app/src/main/java/app/orchard/tv/ui/control/MediaToolsPage.kt
 new file mode 100644
-index 0000000..80e9d64
+index 0000000000000000000000000000000000000000..80e9d64649d3259cf2e82fa736ad4f2b74191c69
 --- /dev/null
 +++ b/app/src/main/java/app/orchard/tv/ui/control/MediaToolsPage.kt
 @@ -0,0 +1,112 @@
@@ -312,7 +855,7 @@ index 0000000..80e9d64
 +    }
 +}
 diff --git a/app/src/main/java/app/orchard/tv/update/Updates.kt b/app/src/main/java/app/orchard/tv/update/Updates.kt
-index 82f6519..df40945 100644
+index 82f651974592c0d83d04cddcc2b8913eff7a7ef5..df4094531caee99131c15501747b7667116b8669 100644
 --- a/app/src/main/java/app/orchard/tv/update/Updates.kt
 +++ b/app/src/main/java/app/orchard/tv/update/Updates.kt
 @@ -85,6 +85,9 @@ object Updates {
@@ -343,9 +886,41 @@ index 82f6519..df40945 100644
  
      /**
       * Downloads this flavor's APK of the latest release and installs it. Android 9 and later, a
+diff --git a/app/src/main/res/values-kk/beginner.xml b/app/src/main/res/values-kk/beginner.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..180b37452bdf4a74cf53fe3023a949b7f34d9430
+--- /dev/null
++++ b/app/src/main/res/values-kk/beginner.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="beginner_title">Баптау және қалпына келтіру</string>
++    <string name="beginner_intro">Құрылғыны тексеріп, басты экран қорғауына рұқсат беріңіз де, жұмыс үстелін ашыңыз. Пультпен басқарыңыз.</string>
++    <string name="beginner_compatibility">Құрылғы ақпараты үйлесімділік кепілі емес. Іске қосылу және күту режимінен ояну микробағдарламаға байланысты. Бейне қызметтерге үйлесімді қолданбалар мен есептік жазбалар қажет.</string>
++    <string name="beginner_detected">1 · Теледидарды тексеру</string>
++    <string name="beginner_remote">Жоғары және төмен — жылжу, OK — таңдау, Артқа — қайту. Рұқсат беті болмаса, алдымен жұмыс үстелін көріңіз.</string>
++    <string name="beginner_continue">Келесі: басты экран қорғауы</string>
++    <string name="beginner_exit">Баптаудан шығу</string>
++    <string name="beginner_guard_title">2 · Қорғау әдепкіде қосулы</string>
++    <string name="beginner_guard_body">Жүйенің арнайы мүмкіндіктерінде Aerial қосып, осында оралыңыз. Қызмет интерфейсті көріп, Басты бет батырмасын өңдей алады. Рұқсатты жүйеде растаңыз.</string>
++    <string name="beginner_authorized">Рұқсат қосылды. Баптауды аяқтаңыз. Осы теледидарда іске қосылу мен оянуды тексеру керек.</string>
++    <string name="beginner_authorize">Рұқсаттарды ашу</string>
++    <string name="beginner_enter">Аяқтап, жұмыс үстелін ашу</string>
++    <string name="beginner_try_without">Қорғаусыз байқап көру</string>
++    <string name="beginner_missing_page">Бұл микробағдарламада рұқсат беті жоқ. Қорғауды баптау үшін компьютер қажет болуы мүмкін. Жұмыс үстелін қазір көре аласыз.</string>
++    <string name="beginner_recovery">Өшіру және қалпына келтіру</string>
++    <string name="beginner_recovery_body">Алдымен біздің қорғауды өшіріңіз. Әдепкі басты экранды не іске қосылатын қолданбаны өзгертсеңіз, теледидар баптауында бастапқысын таңдаңыз. Басқа қызметтер сақталады.</string>
++    <string name="beginner_disable">Қорғауды өшіру</string>
++    <string name="beginner_disabled">Қорғау өшірілді және автоматты түрде қайта қосылмайды.</string>
++    <string name="beginner_stock_home">Бастапқы жұмыс үстелін ашу</string>
++    <string name="beginner_home_settings">Басты экранды таңдау</string>
++    <string name="beginner_tv_settings">Теледидар баптаулары</string>
++    <string name="beginner_back">Артқа</string>
++    <string name="beginner_open_failed">Бет ашылмады. Теледидар баптауларын пайдаланыңыз.</string>
++</resources>
 diff --git a/app/src/main/res/values-kk/media_tools.xml b/app/src/main/res/values-kk/media_tools.xml
 new file mode 100644
-index 0000000..30d4c83
+index 0000000000000000000000000000000000000000..30d4c83c67504e4d64765d4642f88e5547d1af10
 --- /dev/null
 +++ b/app/src/main/res/values-kk/media_tools.xml
 @@ -0,0 +1,17 @@
@@ -366,9 +941,41 @@ index 0000000..30d4c83
 +    <string name="media_clash_missing">Clash Meta қолжетімсіз. Алдымен клиентті орнатып, баптаңыз.</string>
 +    <string name="media_control_missing">Clash Meta жылдам басқаруы қолжетімсіз. Қосу не ажырату үшін клиентті ашыңыз.</string>
 +</resources>
+diff --git a/app/src/main/res/values-ru/beginner.xml b/app/src/main/res/values-ru/beginner.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..d424adb25b18f1478c6775af8ce52d8f1f2e5a6f
+--- /dev/null
++++ b/app/src/main/res/values-ru/beginner.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="beginner_title">Настройка и восстановление</string>
++    <string name="beginner_intro">Проверьте устройство, разрешите защиту главного экрана и откройте рабочий стол. Управляйте пультом.</string>
++    <string name="beginner_compatibility">Данные устройства не гарантируют совместимость. Запуск и выход из ожидания зависят от прошивки. Видеосервисы требуют совместимых приложений и аккаунтов.</string>
++    <string name="beginner_detected">1 · Проверка телевизора</string>
++    <string name="beginner_remote">Вверх и вниз — перемещение, OK — выбор, Назад — возврат. Если страницы разрешений нет, сначала попробуйте рабочий стол.</string>
++    <string name="beginner_continue">Далее: защита главного экрана</string>
++    <string name="beginner_exit">Выйти из настройки</string>
++    <string name="beginner_guard_title">2 · Защита включена по умолчанию</string>
++    <string name="beginner_guard_body">Включите Aerial в специальных возможностях системы и вернитесь сюда. Служба видит интерфейс и обрабатывает кнопку «Домой». Подтвердите разрешение в системе.</string>
++    <string name="beginner_authorized">Разрешение включено. Завершите настройку. Запуск и пробуждение ещё нужно проверить на этом телевизоре.</string>
++    <string name="beginner_authorize">Открыть разрешения</string>
++    <string name="beginner_enter">Завершить и открыть рабочий стол</string>
++    <string name="beginner_try_without">Попробовать без защиты</string>
++    <string name="beginner_missing_page">В прошивке нет доступной страницы разрешений. Для защиты может понадобиться компьютер. Рабочий стол можно попробовать сейчас.</string>
++    <string name="beginner_recovery">Отключение и восстановление</string>
++    <string name="beginner_recovery_body">Сначала отключите нашу защиту. Если меняли главный экран или приложение при запуске, верните исходный вариант в настройках ТВ. Другие службы сохраняются.</string>
++    <string name="beginner_disable">Отключить защиту</string>
++    <string name="beginner_disabled">Защита отключена и не будет восстановлена автоматически.</string>
++    <string name="beginner_stock_home">Открыть исходный рабочий стол</string>
++    <string name="beginner_home_settings">Выбрать главный экран</string>
++    <string name="beginner_tv_settings">Настройки телевизора</string>
++    <string name="beginner_back">Назад</string>
++    <string name="beginner_open_failed">Не удалось открыть страницу. Используйте настройки телевизора.</string>
++</resources>
 diff --git a/app/src/main/res/values-ru/media_tools.xml b/app/src/main/res/values-ru/media_tools.xml
 new file mode 100644
-index 0000000..9a4e455
+index 0000000000000000000000000000000000000000..9a4e455f6b17aa98b6a6be3b1e9ecafd60747feb
 --- /dev/null
 +++ b/app/src/main/res/values-ru/media_tools.xml
 @@ -0,0 +1,17 @@
@@ -389,9 +996,41 @@ index 0000000..9a4e455
 +    <string name="media_clash_missing">Clash Meta недоступен. Сначала установите и настройте клиент.</string>
 +    <string name="media_control_missing">Быстрое управление Clash Meta недоступно. Откройте клиент для подключения или отключения.</string>
 +</resources>
+diff --git a/app/src/main/res/values-uk/beginner.xml b/app/src/main/res/values-uk/beginner.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..bb3190647b27fd1ffe44df8c44ac6772755c9ee1
+--- /dev/null
++++ b/app/src/main/res/values-uk/beginner.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="beginner_title">Налаштування та відновлення</string>
++    <string name="beginner_intro">Перевірте пристрій, надайте дозвіл захисту головного екрана та відкрийте робочий стіл. Керуйте пультом.</string>
++    <string name="beginner_compatibility">Дані пристрою не гарантують сумісність. Запуск і вихід з очікування залежать від прошивки. Відеосервіси потребують сумісних застосунків та облікових записів.</string>
++    <string name="beginner_detected">1 · Перевірка телевізора</string>
++    <string name="beginner_remote">Вгору й униз — переміщення, OK — вибір, Назад — повернення. Якщо сторінки дозволів немає, спочатку спробуйте робочий стіл.</string>
++    <string name="beginner_continue">Далі: захист головного екрана</string>
++    <string name="beginner_exit">Вийти з налаштування</string>
++    <string name="beginner_guard_title">2 · Захист увімкнено за замовчуванням</string>
++    <string name="beginner_guard_body">Увімкніть Aerial у спеціальних можливостях системи та поверніться сюди. Служба бачить інтерфейс і обробляє кнопку «Додому». Підтвердьте дозвіл у системі.</string>
++    <string name="beginner_authorized">Дозвіл увімкнено. Завершіть налаштування. Запуск і пробудження ще потрібно перевірити на цьому телевізорі.</string>
++    <string name="beginner_authorize">Відкрити дозволи</string>
++    <string name="beginner_enter">Завершити й відкрити робочий стіл</string>
++    <string name="beginner_try_without">Спробувати без захисту</string>
++    <string name="beginner_missing_page">У прошивці немає доступної сторінки дозволів. Для захисту може знадобитися комп’ютер. Робочий стіл можна спробувати зараз.</string>
++    <string name="beginner_recovery">Вимкнення та відновлення</string>
++    <string name="beginner_recovery_body">Спочатку вимкніть наш захист. Якщо змінювали головний екран або застосунок під час запуску, поверніть початковий варіант у налаштуваннях ТВ. Інші служби зберігаються.</string>
++    <string name="beginner_disable">Вимкнути захист</string>
++    <string name="beginner_disabled">Захист вимкнено й не буде відновлено автоматично.</string>
++    <string name="beginner_stock_home">Відкрити початковий робочий стіл</string>
++    <string name="beginner_home_settings">Вибрати головний екран</string>
++    <string name="beginner_tv_settings">Налаштування телевізора</string>
++    <string name="beginner_back">Назад</string>
++    <string name="beginner_open_failed">Не вдалося відкрити сторінку. Скористайтеся налаштуваннями телевізора.</string>
++</resources>
 diff --git a/app/src/main/res/values-uk/media_tools.xml b/app/src/main/res/values-uk/media_tools.xml
 new file mode 100644
-index 0000000..4cd2d1d
+index 0000000000000000000000000000000000000000..4cd2d1d6959aa61dbba576323a7b65ad70d81f8a
 --- /dev/null
 +++ b/app/src/main/res/values-uk/media_tools.xml
 @@ -0,0 +1,17 @@
@@ -412,9 +1051,41 @@ index 0000000..4cd2d1d
 +    <string name="media_clash_missing">Clash Meta недоступний. Спочатку встановіть і налаштуйте клієнт.</string>
 +    <string name="media_control_missing">Швидке керування Clash Meta недоступне. Відкрийте клієнт для підключення або відключення.</string>
 +</resources>
+diff --git a/app/src/main/res/values-zh/beginner.xml b/app/src/main/res/values-zh/beginner.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..aaf60b1e05ff65c401ec4f2cbaef05342afd876d
+--- /dev/null
++++ b/app/src/main/res/values-zh/beginner.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="beginner_title">新手设置与恢复</string>
++    <string name="beginner_intro">跟着引导检查设备、授权桌面守护，再进入桌面。全程可用遥控器操作。</string>
++    <string name="beginner_compatibility">读取到设备信息不等于已经适配。开机和待机恢复仍受厂商固件影响；视频服务需使用各自兼容的客户端和账号。</string>
++    <string name="beginner_detected">1 · 检查你的电视</string>
++    <string name="beginner_remote">上下键移动，确认键选择，返回键退回上一步。没有授权入口时，可以先体验桌面。</string>
++    <string name="beginner_continue">下一步：桌面守护</string>
++    <string name="beginner_exit">退出引导</string>
++    <string name="beginner_guard_title">2 · 桌面守护 · 默认启用</string>
++    <string name="beginner_guard_body">在系统无障碍页面启用 Aerial，然后返回这里。守护可以观察界面并处理主页键，需由你在系统页面确认授权。</string>
++    <string name="beginner_authorized">系统无障碍授权已开启，可完成设置进入桌面。本机的开机、待机恢复仍需实际测试。</string>
++    <string name="beginner_authorize">前往系统授权</string>
++    <string name="beginner_enter">完成设置，进入桌面</string>
++    <string name="beginner_try_without">暂不启用，先体验桌面</string>
++    <string name="beginner_missing_page">此固件没有可打开的授权页面，桌面守护可能需要电脑辅助配置。你仍可先体验桌面。</string>
++    <string name="beginner_recovery">关闭守护与恢复</string>
++    <string name="beginner_recovery_body">先关闭本应用的桌面守护。如果改过默认桌面或开机应用，还需在电视设置中选回原桌面。其他无障碍服务会保留。</string>
++    <string name="beginner_disable">关闭桌面守护</string>
++    <string name="beginner_disabled">桌面守护已关闭，后续不会自动恢复开启。</string>
++    <string name="beginner_stock_home">打开原桌面</string>
++    <string name="beginner_home_settings">选择默认桌面</string>
++    <string name="beginner_tv_settings">打开电视设置</string>
++    <string name="beginner_back">返回上一步</string>
++    <string name="beginner_open_failed">无法打开此页面，请从电视设置中操作。</string>
++</resources>
 diff --git a/app/src/main/res/values-zh/media_tools.xml b/app/src/main/res/values-zh/media_tools.xml
 new file mode 100644
-index 0000000..b2d2aac
+index 0000000000000000000000000000000000000000..b2d2aacb174a658ebd67eff36ed03965064e8b56
 --- /dev/null
 +++ b/app/src/main/res/values-zh/media_tools.xml
 @@ -0,0 +1,17 @@
@@ -435,9 +1106,41 @@ index 0000000..b2d2aac
 +    <string name="media_clash_missing">未找到可打开的 Clash Meta，请先安装客户端并完成配置。</string>
 +    <string name="media_control_missing">Clash Meta 的快捷控制入口不可用，请打开客户端连接或断开。</string>
 +</resources>
+diff --git a/app/src/main/res/values/beginner.xml b/app/src/main/res/values/beginner.xml
+new file mode 100644
+index 0000000000000000000000000000000000000000..413fce763029e67de180a38c77d48a185d52be86
+--- /dev/null
++++ b/app/src/main/res/values/beginner.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="beginner_title">Setup and recovery</string>
++    <string name="beginner_intro">A guided start for your TV. Use the remote to check the device, authorize Home Guard and open the desktop.</string>
++    <string name="beginner_compatibility">Device information is not a compatibility guarantee. Startup and standby behavior depend on the TV firmware. Video services need their own compatible apps and accounts.</string>
++    <string name="beginner_detected">1 · Check your TV</string>
++    <string name="beginner_remote">Use Up and Down to move, OK to select, and Back to return. If an authorization page is unavailable, you can try the desktop first.</string>
++    <string name="beginner_continue">Continue: Home Guard</string>
++    <string name="beginner_exit">Exit setup</string>
++    <string name="beginner_guard_title">2 · Home Guard · on by default</string>
++    <string name="beginner_guard_body">Enable Aerial in the system accessibility page, then return here. Home Guard can observe the interface and handle the Home key. The system needs your confirmation.</string>
++    <string name="beginner_authorized">Accessibility authorization is enabled. Finish setup to enter the desktop. Startup and wake behavior still need a test on this TV.</string>
++    <string name="beginner_authorize">Open authorization settings</string>
++    <string name="beginner_enter">Finish and open desktop</string>
++    <string name="beginner_try_without">Try without Home Guard</string>
++    <string name="beginner_missing_page">This firmware has no accessible authorization page. Home Guard may require computer-assisted setup. You can still try the desktop.</string>
++    <string name="beginner_recovery">Turn off and restore</string>
++    <string name="beginner_recovery_body">Turn off our Home Guard first. If you changed the default home or startup app, select the original one in TV settings. Other accessibility services stay enabled.</string>
++    <string name="beginner_disable">Turn off Home Guard</string>
++    <string name="beginner_disabled">Home Guard is off and will not be restored automatically.</string>
++    <string name="beginner_stock_home">Open original desktop</string>
++    <string name="beginner_home_settings">Choose default desktop</string>
++    <string name="beginner_tv_settings">Open TV settings</string>
++    <string name="beginner_back">Back</string>
++    <string name="beginner_open_failed">This page could not be opened. Use TV settings instead.</string>
++</resources>
 diff --git a/app/src/main/res/values/media_tools.xml b/app/src/main/res/values/media_tools.xml
 new file mode 100644
-index 0000000..f847fa2
+index 0000000000000000000000000000000000000000..f847fa224bc865d1b6d8d71aea9a98ddb8560a2f
 --- /dev/null
 +++ b/app/src/main/res/values/media_tools.xml
 @@ -0,0 +1,17 @@
@@ -458,9 +1161,210 @@ index 0000000..f847fa2
 +    <string name="media_clash_missing">No usable Clash Meta app was found. Install and configure the client first.</string>
 +    <string name="media_control_missing">Clash Meta does not expose this shortcut. Open the client to connect or disconnect.</string>
 +</resources>
+diff --git a/app/src/test/java/app/orchard/tv/BeginnerActivityTest.kt b/app/src/test/java/app/orchard/tv/BeginnerActivityTest.kt
+new file mode 100644
+index 0000000000000000000000000000000000000000..b559d329a2a5a76700752ea4966399ef2357f284
+--- /dev/null
++++ b/app/src/test/java/app/orchard/tv/BeginnerActivityTest.kt
+@@ -0,0 +1,102 @@
++package app.orchard.tv
++
++import android.content.ComponentName
++import android.content.Context
++import android.content.pm.PackageManager
++import android.provider.Settings
++import android.view.KeyEvent
++import androidx.compose.ui.test.assertIsDisplayed
++import androidx.compose.ui.test.junit4.createEmptyComposeRule
++import androidx.compose.ui.test.onNodeWithText
++import app.orchard.tv.guard.HomeGuardService
++import app.orchard.tv.settings.BeginnerSetup
++import app.orchard.tv.settings.AerialSettings
++import app.orchard.tv.system.SystemProbe
++import org.junit.After
++import org.junit.Assert.*
++import org.junit.Before
++import org.junit.Rule
++import org.junit.Test
++import org.junit.runner.RunWith
++import org.robolectric.Robolectric
++import org.robolectric.RobolectricTestRunner
++import org.robolectric.RuntimeEnvironment
++import org.robolectric.android.controller.ActivityController
++import org.robolectric.annotation.Config
++
++@RunWith(RobolectricTestRunner::class)
++@Config(sdk = [28], qualifiers = "zh-rCN-w960dp-h540dp-land-mdpi")
++class BeginnerActivityTest {
++    @get:Rule val compose = createEmptyComposeRule()
++    private var host: ActivityController<BeginnerActivity>? = null
++    private val app get() = RuntimeEnvironment.getApplication()
++    private fun text(id: Int) = app.getString(id)
++
++    @Before fun reset() {
++        AerialSettings.init(app)
++        AerialSettings.choosePin(null)
++        app.getSharedPreferences("beginner_setup", Context.MODE_PRIVATE).edit().clear().commit()
++        app.packageManager.setComponentEnabledSetting(ComponentName(app, HomeGuardService::class.java),
++            PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, PackageManager.DONT_KILL_APP)
++        Settings.Secure.putString(app.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "")
++        Settings.Secure.putInt(app.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED, 1)
++    }
++    @After fun close() { compose.runOnUiThread { host?.close() } }
++
++    @Test fun remoteOpensDefaultGuardStepWithoutGrantingPermission() {
++        mount()
++        compose.onNodeWithText(text(R.string.beginner_detected)).assertIsDisplayed()
++        tap(KeyEvent.KEYCODE_DPAD_CENTER)
++        compose.onNodeWithText(text(R.string.beginner_guard_title)).assertIsDisplayed()
++        assertTrue(BeginnerSetup.guardRequested(app))
++        assertFalse(BeginnerSetup.authorized(app))
++        assertFalse(BeginnerSetup.completed(app))
++    }
++
++    @Test fun remoteCanExplicitlySkipAndTheChoicePersists() {
++        mount(); tap(KeyEvent.KEYCODE_DPAD_CENTER)
++        if (SystemProbe.guardSettingsIntent(app) != null) tap(KeyEvent.KEYCODE_DPAD_DOWN)
++        tap(KeyEvent.KEYCODE_DPAD_CENTER)
++        assertTrue(BeginnerSetup.completed(app))
++        assertFalse(BeginnerSetup.guardRequested(app))
++        assertFalse(BeginnerSetup.mayRestoreGuard(app))
++    }
++
++    @Test fun authorizedUserCanFinishWithTheRemote() {
++        Settings.Secure.putString(app.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
++            ComponentName(app, HomeGuardService::class.java).flattenToString())
++        mount(); tap(KeyEvent.KEYCODE_DPAD_CENTER)
++        compose.onNodeWithText(text(R.string.beginner_enter)).assertIsDisplayed()
++        tap(KeyEvent.KEYCODE_DPAD_CENTER)
++        assertTrue(BeginnerSetup.completed(app))
++        assertTrue(BeginnerSetup.guardRequested(app))
++    }
++
++    @Test fun anExistingParentPinCannotBeBypassedThroughRecovery() {
++        AerialSettings.choosePin("2468")
++        AerialSettings.relock()
++        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofSeconds(1))
++        assertTrue(AerialSettings.locked)
++        compose.runOnUiThread { host = Robolectric.buildActivity(BeginnerActivity::class.java).setup() }
++        assertTrue(host!!.get().isFinishing)
++        assertFalse(BeginnerSetup.completed(app))
++    }
++
++    private fun mount() {
++        compose.mainClock.autoAdvance = false
++        compose.runOnUiThread {
++            host = Robolectric.buildActivity(BeginnerActivity::class.java).setup()
++            host!!.windowFocusChanged(true)
++        }
++        settle()
++    }
++    private fun settle() { repeat(20) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() } }
++    private fun tap(code: Int) {
++        compose.runOnUiThread {
++            val view = host!!.get().window.decorView
++            view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
++            view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
++        }
++        settle()
++    }
++}
+diff --git a/app/src/test/java/app/orchard/tv/settings/BeginnerSetupTest.kt b/app/src/test/java/app/orchard/tv/settings/BeginnerSetupTest.kt
+new file mode 100644
+index 0000000000000000000000000000000000000000..bfbdde06786b786fd1b429c3257abfa31876f62a
+--- /dev/null
++++ b/app/src/test/java/app/orchard/tv/settings/BeginnerSetupTest.kt
+@@ -0,0 +1,87 @@
++package app.orchard.tv.settings
++
++import android.Manifest
++import android.content.ComponentName
++import android.content.Context
++import android.content.pm.PackageManager
++import android.os.UserManager
++import android.provider.Settings
++import app.orchard.tv.guard.GuardSetup
++import app.orchard.tv.guard.HomeGuardService
++import org.junit.Assert.*
++import org.junit.Before
++import org.junit.Test
++import org.junit.runner.RunWith
++import org.robolectric.RobolectricTestRunner
++import org.robolectric.RuntimeEnvironment
++import org.robolectric.Shadows.shadowOf
++import org.robolectric.annotation.Config
++
++@RunWith(RobolectricTestRunner::class)
++@Config(sdk = [23, 26, 28])
++class BeginnerSetupTest {
++    private val context get() = RuntimeEnvironment.getApplication() as Context
++    private val service get() = ComponentName(context, HomeGuardService::class.java)
++    private val other = "test.assistant/test.assistant.Service"
++
++    @Before fun reset() {
++        context.getSharedPreferences("beginner_setup", Context.MODE_PRIVATE).edit().clear().commit()
++        context.packageManager.setComponentEnabledSetting(service, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, PackageManager.DONT_KILL_APP)
++        Settings.Secure.putString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, other)
++        Settings.Secure.putInt(context.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED, 1)
++        shadowOf(context.getSystemService(Context.USER_SERVICE) as UserManager).setUserUnlocked(true)
++    }
++
++    @Test fun defaultIsRequestedButNeverAuthorizedByTheWizard() {
++        shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(Manifest.permission.WRITE_SECURE_SETTINGS)
++        assertTrue(BeginnerSetup.guardRequested(context))
++        assertTrue(BeginnerSetup.needsGuide(context))
++        assertFalse(BeginnerSetup.mayRestoreGuard(context))
++        assertFalse(GuardSetup.ensureEnabled(context))
++        assertEquals(other, services())
++    }
++
++    @Test fun completionRequiresActualSystemAuthorization() {
++        assertThrows(IllegalStateException::class.java) { BeginnerSetup.finish(context) }
++        assertFalse(BeginnerSetup.completed(context))
++    }
++
++    @Test fun successfulCompletionPreservesOtherServices() {
++        authorize()
++        BeginnerSetup.finish(context)
++        assertTrue(BeginnerSetup.completed(context))
++        assertTrue(BeginnerSetup.mayRestoreGuard(context))
++        assertEquals("$other:${service.flattenToString()}", services())
++    }
++
++    @Test fun disablingPersistsAndDoesNotRewriteGlobalAccessibility() {
++        authorize(); BeginnerSetup.finish(context)
++        val before = services()
++        BeginnerSetup.disableGuard(context)
++        assertFalse(BeginnerSetup.authorized(context))
++        assertFalse(BeginnerSetup.mayRestoreGuard(context))
++        assertFalse(GuardSetup.ensureEnabled(context))
++        assertFalse(GuardSetup.startAfterStopOverStock(context))
++        assertEquals(PackageManager.COMPONENT_ENABLED_STATE_DISABLED, context.packageManager.getComponentEnabledSetting(service))
++        assertEquals(before, services())
++        assertEquals(1, Settings.Secure.getInt(context.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED))
++        assertFalse(context.getSharedPreferences("beginner_setup", 0).getBoolean("guard_requested", true))
++    }
++
++    @Test fun preparingAuthorizationDoesNotGrantThePermission() {
++        BeginnerSetup.disableGuard(context)
++        BeginnerSetup.prepareGuard(context)
++        assertTrue(BeginnerSetup.guardRequested(context))
++        assertFalse(BeginnerSetup.authorized(context))
++        assertEquals(other, services())
++    }
++
++    @Test fun systemDisabledAccessibilityIsNotReportedAsAuthorized() {
++        authorize()
++        Settings.Secure.putInt(context.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED, 0)
++        assertFalse(BeginnerSetup.authorized(context))
++    }
++
++    private fun services() = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
++    private fun authorize() = Settings.Secure.putString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "$other:${service.flattenToString()}")
++}
 diff --git a/app/src/test/java/app/orchard/tv/system/MediaShortcutsTest.kt b/app/src/test/java/app/orchard/tv/system/MediaShortcutsTest.kt
 new file mode 100644
-index 0000000..2f57277
+index 0000000000000000000000000000000000000000..2f572770247dfe48b7fe3c6ac3f8fa25876fdc86
 --- /dev/null
 +++ b/app/src/test/java/app/orchard/tv/system/MediaShortcutsTest.kt
 @@ -0,0 +1,104 @@
@@ -570,7 +1474,7 @@ index 0000000..2f57277
 +}
 diff --git a/app/src/test/java/app/orchard/tv/ui/control/MediaToolsPageTest.kt b/app/src/test/java/app/orchard/tv/ui/control/MediaToolsPageTest.kt
 new file mode 100644
-index 0000000..d54a806
+index 0000000000000000000000000000000000000000..d54a806adeb6882a274fc7151b9ab590204259af
 --- /dev/null
 +++ b/app/src/test/java/app/orchard/tv/ui/control/MediaToolsPageTest.kt
 @@ -0,0 +1,108 @@
@@ -684,7 +1588,7 @@ index 0000000..d54a806
 +}
 diff --git a/app/src/test/java/app/orchard/tv/update/LocalEditionTest.kt b/app/src/test/java/app/orchard/tv/update/LocalEditionTest.kt
 new file mode 100644
-index 0000000..5980d83
+index 0000000000000000000000000000000000000000..5980d834a27eb350d4886f284ad54c21798c9a04
 --- /dev/null
 +++ b/app/src/test/java/app/orchard/tv/update/LocalEditionTest.kt
 @@ -0,0 +1,21 @@

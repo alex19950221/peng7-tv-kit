@@ -6,6 +6,7 @@ SECURITY.md
 THIRD_PARTY_NOTICES.md
 docs/BUILD.md
 docs/COMPATIBILITY.md
+docs/NOVICE-APK.md
 docs/ROUTING.md
 docs/SETUP.md
 docs/images/reviewed.json

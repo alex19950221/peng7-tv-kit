@@ -36,7 +36,7 @@ keyPassword=CHANGE_ME
 ## 构建与验证
 
 ```powershell
-.\gradlew.bat :app:testStandardDebugUnitTest --tests 'app.orchard.tv.system.MediaShortcutsTest' --tests 'app.orchard.tv.ui.control.MediaToolsPageTest' --tests 'app.orchard.tv.update.LocalEditionTest'
+.\gradlew.bat :app:testStandardDebugUnitTest --tests 'app.orchard.tv.BeginnerActivityTest' --tests 'app.orchard.tv.settings.BeginnerSetupTest' --tests 'app.orchard.tv.system.MediaShortcutsTest' --tests 'app.orchard.tv.ui.control.MediaToolsPageTest' --tests 'app.orchard.tv.update.LocalEditionTest'
 .\gradlew.bat :app:assembleStandardRelease :app:assembleGuardRelease
 ```
 
@@ -46,6 +46,6 @@ keyPassword=CHANGE_ME
 
 ## 本次打包验证范围
 
-本项目保存的是已经测试过的 `1.95-peng7.1` 代码，未在公开整理时新增桌面功能。历史验证包括选取的 32 项单测、Standard/Guard Release 构建和指定真机验证。本轮公开整理检查补丁可应用、文件一致性、PowerShell 语法和示例配置；不把打包检查当作新增真机测试。
+当前补丁为 `1.95-peng7.2-alpha.1`（137），新增新手设置与恢复。36 项定向测试、Standard / Guard Release 构建及 Android 7.0 模拟器流程已通过；完整范围见 [新手 APK 指南](NOVICE-APK.md)。旧版 `1.95-peng7.1` 的历史验证包括选取的 32 项单测、Release 构建和指定真机操作。新 Alpha 还没有在真实电视上验证，不把构建或模拟器检查写成跨机型适配通过。
 
 YouTube 在桌面上作为普通应用排序，本补丁的「影音与网络」页面目前没有新增 YouTube 专用按钮。
