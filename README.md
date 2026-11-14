@@ -4,9 +4,28 @@
 
 基于 [Aerial](https://github.com/pengchujin/aerial-tv) 的桌面定制补丁，配套设备检查脚本、安装与恢复指南，以及不含真实节点的 Mihomo 分流示例。起点是一台雷鸟鹏 7 Pro 的实际配置过程，目标是让其他使用者知道该准备什么、怎样复现、哪些地方仍需自己验证。
 
-[快速开始](#快速开始) · [实测设备与兼容性](#实测设备与兼容性) · [分流配置](#分流配置) · [排查问题](#排查问题) · [常见问题](#常见问题)
+[真机截图](#真机截图) · [快速开始](#快速开始) · [实测设备与兼容性](#实测设备与兼容性) · [分流配置](#分流配置) · [排查问题](#排查问题) · [常见问题](#常见问题)
 
 > **当前交付形态：源码补丁 + 配置模板 + 操作指南。** 本仓库尚未提供可直接下载的定制 APK。应用补丁后需自行构建和签名；只想使用 Aerial 桌面时，可以从上游项目开始。
+
+## 真机截图
+
+以下三张图片均于 **2026-11-14** 从雷鸟鹏 7 Pro 65 英寸、3GB / 64GB 的实际电视直接截取，保留原始 **1920 × 1080** PNG，未经拼接或界面重绘。点击图片可查看原图。
+
+### 桌面与第一排应用
+
+[![雷鸟鹏 7 Pro 的 Aerial 实际桌面，Apple TV 位于第 3 位，YouTube 位于第 5 位](docs/images/tv-home.png)](docs/images/tv-home.png)
+
+第一排依次为 CIBN 酷喵、云视听小电视、Apple TV、BesTV 粤视厅和 YouTube，展示原有影音应用与新增入口的实际排列。
+
+### 控制中心与影音快捷操作
+
+| 控制中心 | 影音与网络 |
+| --- | --- |
+| [![电视控制中心：信号源、网络、设置及已开启的桌面守护](docs/images/tv-control-center.png)](docs/images/tv-control-center.png) | [![电视影音与网络页面：Apple TV 与 Clash Meta 可打开，系统 VPN 未连接](docs/images/tv-media-tools.png)](docs/images/tv-media-tools.png) |
+| 可见定制版本 `1.95-peng7.1-guard`，桌面守护已开启。 | Apple TV 与 Clash Meta 均被识别为“可打开”，并提供连接／断开按钮。 |
+
+截图保留拍摄时的真实状态：**系统 VPN 未连接**。这些图片展示桌面与控制入口；历史播放结果及尚未验证的项目见下方兼容性记录。
 
 ## 配置完成后能做什么
 
@@ -245,6 +264,7 @@ peng7-tv-kit/
 │  ├─ check-public.py             检查公开文件清单、补丁摘要与敏感内容
 │  └─ package-public.py           按公开清单生成源码 ZIP
 ├─ docs/
+│  ├─ images/                     真机原始截图与逐图审核摘要
 │  ├─ BUILD.md                    环境、签名、构建与验证
 │  ├─ SETUP.md                    安装、应用布局、守护与恢复
 │  ├─ ROUTING.md                  分流规则、合并方法与验证
@@ -265,7 +285,7 @@ python scripts/check-public.py
 python scripts/package-public.py
 ```
 
-打包器只收录 [`public-files.txt`](public-files.txt) 中的文件，生成 `dist/peng7-tv-kit-source.zip` 与校验文件。修改补丁时需同步更新锁定文件中的摘要并重新验证；新增公开文件时需更新清单。详见 [贡献说明](CONTRIBUTING.md)。
+打包器只收录 [`public-files.txt`](public-files.txt) 中的文件，生成 `dist/peng7-tv-kit-source.zip` 与校验文件。修改补丁时需同步更新锁定文件中的摘要并重新验证；新增公开文件时需更新清单。真机 PNG 另按 [`docs/images/reviewed.json`](docs/images/reviewed.json) 核对逐图审核记录与 SHA256，图片内容仍需人工检查。详见 [贡献说明](CONTRIBUTING.md)。
 
 仓库不分发第三方 APK、会员账号、代理订阅、真实服务器、签名私钥、设备报告或登录二维码。自动扫描不能代替人工审阅；提交配置、日志与截图前，检查其中是否仍有订阅、令牌或账号信息。安全问题的处理见 [SECURITY.md](SECURITY.md)。
 

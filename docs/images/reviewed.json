@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "screenshots": [
+    {
+      "path": "docs/images/tv-home.png",
+      "title": "Aerial desktop with Apple TV and YouTube",
+      "captured_on": "2026-11-14",
+      "device": "Thunderbird Peng 7 Pro 65-inch 3GB/64GB",
+      "source": "ADB screencap from the physical TV",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "2fd38859cd7d196de18fec1911e4228082ac76c9b76746b30a271ce695235e63",
+      "privacy_reviewed": true
+    },
+    {
+      "path": "docs/images/tv-control-center.png",
+      "title": "Control center and enabled home guard",
+      "captured_on": "2026-11-14",
+      "device": "Thunderbird Peng 7 Pro 65-inch 3GB/64GB",
+      "source": "ADB screencap from the physical TV",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "bb1c4d8adb122a5e4704dab23659c5eeef7537c2595e6cbf6153c994cac07d87",
+      "privacy_reviewed": true
+    },
+    {
+      "path": "docs/images/tv-media-tools.png",
+      "title": "Media and network page",
+      "captured_on": "2026-11-14",
+      "device": "Thunderbird Peng 7 Pro 65-inch 3GB/64GB",
+      "source": "ADB screencap from the physical TV",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "9614abde862d146b2440ab68b6326249494f8c41a28bb75f6f30c9a7c728dcc1",
+      "privacy_reviewed": true
+    }
+  ]
+}

@@ -8,6 +8,10 @@ docs/BUILD.md
 docs/COMPATIBILITY.md
 docs/ROUTING.md
 docs/SETUP.md
+docs/images/reviewed.json
+docs/images/tv-control-center.png
+docs/images/tv-home.png
+docs/images/tv-media-tools.png
 examples/mihomo-tv.example.yaml
 patches/aerial-peng7.patch
 public-files.txt

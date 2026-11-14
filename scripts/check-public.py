@@ -38,8 +38,25 @@ def public_paths():
 def validate():
     paths = public_paths()
     failures = []
+    # Binary screenshots cannot be covered by text scans. Publish only PNGs
+    # whose exact bytes were visually reviewed and recorded in the manifest.
+    review_path = ROOT / 'docs/images/reviewed.json'
+    reviews = {}
+    if review_path in paths:
+        review_data = json.loads(review_path.read_text(encoding='utf-8'))
+        reviews = {item['path']: item for item in review_data['screenshots']}
     for path in paths:
         name = path.relative_to(ROOT).as_posix()
+        if path.suffix.lower() == '.png':
+            data = path.read_bytes()
+            review = reviews.get(name, {})
+            if (not name.startswith('docs/images/')
+                    or not data.startswith(b'\x89PNG\r\n\x1a\n')
+                    or not data.endswith(b'\x00\x00\x00\x00IEND\xaeB`\x82')
+                    or review.get('privacy_reviewed') is not True
+                    or review.get('sha256') != hashlib.sha256(data).hexdigest()):
+                failures.append(f'{name}: missing or mismatched screenshot review')
+            continue
         text = path.read_text(encoding='utf-8')
         for label, pattern in PATTERNS.items():
             if re.search(pattern, text):
@@ -66,6 +83,6 @@ def validate():
 if __name__ == '__main__':
     try:
         result = validate()
-        print(f'PASS: {len(result)} public files; patch checksum and content checks passed.')
+        print(f'PASS: {len(result)} public files; patch checksum, content and screenshot review checks passed.')
     except (ValueError, OSError, subprocess.CalledProcessError) as exc:
         raise SystemExit(str(exc))
