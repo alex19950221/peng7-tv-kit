@@ -1,0 +1,25 @@
+{
+  "repository": "https://github.com/pengchujin/aerial-tv.git",
+  "commit": "a0f4b59c5a76a0a549410154d7009399d45b5a22",
+  "base_version": "1.95",
+  "edition_version": "1.95-peng7.1",
+  "patch": "patches/aerial-peng7.patch",
+  "patch_sha256": "d22d0d30a7b7599b4a89fc52d1be582044a2539ed8ad2dd920cade70e02d0a98",
+  "changed_files": [
+    "app/build.gradle.kts",
+    "app/src/main/java/app/orchard/tv/HomeViewModel.kt",
+    "app/src/main/java/app/orchard/tv/MainActivity.kt",
+    "app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt",
+    "app/src/main/java/app/orchard/tv/update/Updates.kt",
+    "app/src/main/java/app/orchard/tv/system/MediaShortcuts.kt",
+    "app/src/main/java/app/orchard/tv/ui/control/MediaToolsPage.kt",
+    "app/src/main/res/values/media_tools.xml",
+    "app/src/main/res/values-zh/media_tools.xml",
+    "app/src/main/res/values-ru/media_tools.xml",
+    "app/src/main/res/values-uk/media_tools.xml",
+    "app/src/main/res/values-kk/media_tools.xml",
+    "app/src/test/java/app/orchard/tv/system/MediaShortcutsTest.kt",
+    "app/src/test/java/app/orchard/tv/ui/control/MediaToolsPageTest.kt",
+    "app/src/test/java/app/orchard/tv/update/LocalEditionTest.kt"
+  ]
+}

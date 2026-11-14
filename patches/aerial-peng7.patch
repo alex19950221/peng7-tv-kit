@@ -1,0 +1,711 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index d04a44b..9616d01 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -19,8 +19,10 @@ android {
+         // Android 5.0. Compose 1.10 and later need 6.0, so the Compose BOM below stays on 1.9.
+         minSdk = 21
+         targetSdk = 34
+-        versionCode = 135
+-        versionName = "1.95"
++        versionCode = 136
++        versionName = "1.95-peng7.1"
++        // Household build: its signing key and update channel differ from upstream.
++        buildConfigField("boolean", "LOCAL_EDITION", "true")
+         // `./gradlew -Pdiag ...`: a build for one reporter's TV whose logcat shows no app lines;
+         // see system/DiagLog.kt.
+         val diag = project.hasProperty("diag")
+diff --git a/app/src/main/java/app/orchard/tv/HomeViewModel.kt b/app/src/main/java/app/orchard/tv/HomeViewModel.kt
+index 594fda9..4f8c579 100644
+--- a/app/src/main/java/app/orchard/tv/HomeViewModel.kt
++++ b/app/src/main/java/app/orchard/tv/HomeViewModel.kt
+@@ -67,7 +67,7 @@ sealed interface Overlay {
+     data object Kids : Overlay
+ }
+ 
+-enum class CcPage { Main, Inputs, InputSettings, Update, Setup }
++enum class CcPage { Main, Inputs, InputSettings, Update, Setup, MediaTools }
+ 
+ /**
+  * Tiles a cold start reads whole before showing Home (two rows and a half, as many as can show);
+diff --git a/app/src/main/java/app/orchard/tv/MainActivity.kt b/app/src/main/java/app/orchard/tv/MainActivity.kt
+index 7031ca5..050221f 100644
+--- a/app/src/main/java/app/orchard/tv/MainActivity.kt
++++ b/app/src/main/java/app/orchard/tv/MainActivity.kt
+@@ -1219,6 +1219,9 @@ class MainActivity : ComponentActivity() {
+     }
+ 
+     private fun open(intent: Intent) {
++        // Media tools open an app just like a Home tile. Tell the guard we left deliberately,
++        // so a late boot/wake event does not bring Home over the video or VPN client.
++        if (app.orchard.tv.system.MediaShortcuts.isMediaIntent(intent)) openedAppSinceHome = true
+         FilmAfterInput.noteOpened(this, intent)
+         if (intent.hasExtra("inputSrc")) allowInputThroughHome(intent)
+         // Older Konka: the input first, then its page, which only shows what is on (issue #710).
+diff --git a/app/src/main/java/app/orchard/tv/system/MediaShortcuts.kt b/app/src/main/java/app/orchard/tv/system/MediaShortcuts.kt
+new file mode 100644
+index 0000000..83a441a
+--- /dev/null
++++ b/app/src/main/java/app/orchard/tv/system/MediaShortcuts.kt
+@@ -0,0 +1,64 @@
++package app.orchard.tv.system
++
++import android.content.ComponentName
++import android.content.Context
++import android.content.Intent
++import android.content.pm.PackageManager
++
++enum class MediaAction { AppleTv, Clash, StartClash, StopClash }
++
++data class MediaAppsStatus(val appleTv: Boolean = false, val clash: Boolean = false)
++
++/** Only talks to installed apps through their public activities. No profiles or credentials. */
++object MediaShortcuts {
++    const val CLASH_PACKAGE = "com.github.metacubex.clash.meta"
++    const val CLASH_CONTROL = "com.github.kr328.clash.ExternalControlActivity"
++    private val applePackages = listOf("com.apple.atve.androidtv.appletv", "com.apple.atve.sony.appletv")
++
++    fun isMediaIntent(intent: Intent): Boolean = intent.component?.packageName.let {
++        it == CLASH_PACKAGE || it in applePackages
++    }
++
++    fun status(context: Context) = MediaAppsStatus(
++        appleTv = intent(context, MediaAction.AppleTv) != null,
++        clash = intent(context, MediaAction.Clash) != null,
++    )
++
++    fun intent(context: Context, action: MediaAction): Intent? = when (action) {
++        MediaAction.AppleTv -> applePackages.firstNotNullOfOrNull { launch(context, it) }
++        MediaAction.Clash -> launch(context, CLASH_PACKAGE)
++        MediaAction.StartClash, MediaAction.StopClash -> {
++            // Separate commands, never a toggle derived from Android's generic VPN indicator:
++            // another VPN may own that indicator, or the status may have changed since rendering.
++            val command = if (action == MediaAction.StartClash) "START_CLASH" else "STOP_CLASH"
++            Intent("$CLASH_PACKAGE.action.$command")
++                .setComponent(ComponentName(CLASH_PACKAGE, CLASH_CONTROL))
++                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
++                .takeIf { usable(context, it) }
++        }
++    }
++
++    private fun launch(context: Context, packageName: String): Intent? {
++        val pm = context.packageManager
++        // Prefer the remote-friendly TV entry, fall back to the regular launcher when available.
++        val tv = runCatching { pm.getLeanbackLaunchIntentForPackage(packageName) }.getOrNull()
++        if (tv != null && usable(context, tv)) return tv
++        return runCatching { pm.getLaunchIntentForPackage(packageName) }.getOrNull()
++            ?.takeIf { usable(context, it) }
++    }
++
++    @Suppress("DEPRECATION")
++    private fun usable(context: Context, intent: Intent): Boolean = runCatching {
++        val pm = context.packageManager
++        val component = intent.component ?: pm.resolveActivity(intent, 0)?.activityInfo
++            ?.let { ComponentName(it.packageName, it.name) } ?: return false
++        val info = pm.getActivityInfo(component, 0)
++        fun disabled(state: Int) = state == PackageManager.COMPONENT_ENABLED_STATE_DISABLED ||
++            state == PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER ||
++            state == PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED
++        info.enabled && info.applicationInfo.enabled && info.exported &&
++            !disabled(pm.getApplicationEnabledSetting(component.packageName)) &&
++            !disabled(pm.getComponentEnabledSetting(component)) &&
++            (info.permission.isNullOrEmpty() || pm.checkPermission(info.permission, context.packageName) == PackageManager.PERMISSION_GRANTED)
++    }.getOrDefault(false)
++}
+diff --git a/app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt b/app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt
+index f06c2bb..0f59776 100644
+--- a/app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt
++++ b/app/src/main/java/app/orchard/tv/ui/control/ControlCenter.kt
+@@ -144,7 +144,7 @@ fun ControlCenter(
+             CcPage.Main -> onClose()
+             CcPage.Inputs -> vm.overlay = Overlay.ControlCenter(CcPage.Main)
+             CcPage.InputSettings -> vm.overlay = Overlay.ControlCenter(CcPage.Inputs)
+-            CcPage.Update, CcPage.Setup -> vm.overlay = Overlay.ControlCenter(CcPage.Main)
++            CcPage.Update, CcPage.Setup, CcPage.MediaTools -> vm.overlay = Overlay.ControlCenter(CcPage.Main)
+         }
+     }
+ 
+@@ -213,6 +213,7 @@ fun ControlCenter(
+                             CcPage.InputSettings -> InputSettingsPage(vm, visible)
+                             CcPage.Update -> UpdatePage(vm, visible)
+                             CcPage.Setup -> SetupPage(vm, visible, onOpen)
++                            CcPage.MediaTools -> MediaToolsPage(vm, visible, onOpen)
+                         }
+                     }
+                 }
+@@ -299,7 +300,9 @@ private fun MainPage(
+         runCatching { first.requestFocus() }
+     }
+ 
+-    Column {
++    // The setup / boot / self-compile rows can coexist on a newly installed TV. Keep all
++    // controls reachable with Down even after adding Media tools to the 540dp canvas.
++    Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
+         Row(verticalAlignment = Alignment.Bottom) {
+             Column(Modifier.weight(1f)) {
+                 BasicText(timeText(now), style = Type.SmallClock.copy(fontSize = Type.LargeTitle.fontSize * 1.05f))
+@@ -382,6 +385,12 @@ private fun MainPage(
+             stringResource(R.string.cc_personalize),
+             onClick = { vm.overlay = Overlay.Wallpaper },
+         )
++        MenuRow(
++            Glyph.Play,
++            stringResource(R.string.media_tools_title),
++            onClick = { vm.whenUnlocked { vm.overlay = Overlay.ControlCenter(CcPage.MediaTools) } },
++            trailing = "›",
++        )
+         // What the TV opens when switched on: easy to forget, and puzzling when it happens.
+         vm.bootTargetLabel()?.let { name ->
+             MenuRow(
+@@ -421,7 +430,7 @@ private fun MainPage(
+             Box(Modifier.size(7.dp).clip(CircleShape).background(dot))
+             Spacer(Modifier.width(8.dp))
+             BasicText(text, style = Type.Caption, modifier = Modifier.weight(1f))
+-            BasicText("Aerial ${Updates.current}", style = Type.Caption.copy(color = Palette.TertiaryLabel), modifier = Modifier.padding(end = 14.dp))
++            BasicText("Aerial ${BuildConfig.VERSION_NAME}", style = Type.Caption.copy(color = Palette.TertiaryLabel), modifier = Modifier.padding(end = 14.dp))
+         }
+     }
+ }
+@@ -598,9 +607,11 @@ private fun SetupPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.co
+     val revival = remember { SystemProbe.revivalSettingsIntent(context) }
+     var qr by remember { mutableStateOf<ImageBitmap?>(null) }
+     LaunchedEffect(Unit) {
+-        val ip = PhoneServer.lanAddress(context)
+-        val url = "https://aerial.qust.me/update/#setup=1&v=${Updates.current}&f=${BuildConfig.FLAVOR}" + (ip?.let { "&tv=$it" } ?: "")
+-        qr = withContext(Dispatchers.Default) { PhoneServer.qr(url).asImageBitmap() }
++        if (!BuildConfig.LOCAL_EDITION) {
++            val ip = PhoneServer.lanAddress(context)
++            val url = "https://aerial.qust.me/update/#setup=1&v=${Updates.current}&f=${BuildConfig.FLAVOR}" + (ip?.let { "&tv=$it" } ?: "")
++            qr = withContext(Dispatchers.Default) { PhoneServer.qr(url).asImageBitmap() }
++        }
+     }
+     Column {
+         MenuRow(Glyph.ChevronLeft, stringResource(R.string.cc_setup_title), focusRequester = first, onClick = { vm.overlay = Overlay.ControlCenter(CcPage.Main) })
+@@ -608,7 +619,10 @@ private fun SetupPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (android.co
+         guard?.let { MenuRow(Glyph.Shield, stringResource(R.string.cc_setup_guard), onClick = { vm.whenUnlocked { onOpen(it) } }, trailing = stringResource(R.string.cc_setup_guard_where) + " ›") }
+         home?.let { MenuRow(Glyph.Check, stringResource(R.string.cc_setup_home), onClick = { vm.whenUnlocked { onOpen(it) } }, trailing = "›") }
+         revival?.let { MenuRow(Glyph.Moon, stringResource(R.string.cc_setup_revival), onClick = { vm.whenUnlocked { onOpen(it) } }, trailing = stringResource(R.string.cc_setup_revival_where) + " ›") }
+-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 14.dp)) {
++        if (BuildConfig.LOCAL_EDITION) {
++            BasicText(stringResource(R.string.media_local_setup), style = Type.Caption,
++                modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp))
++        } else Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 14.dp, end = 14.dp, top = 14.dp)) {
+             Box(Modifier.size(104.dp).smoothBackground(Color.White, 12.dp).padding(8.dp)) {
+                 qr?.let { Image(it, contentDescription = null, contentScale = ContentScale.Fit, filterQuality = FilterQuality.None, modifier = Modifier.fillMaxSize()) }
+             }
+diff --git a/app/src/main/java/app/orchard/tv/ui/control/MediaToolsPage.kt b/app/src/main/java/app/orchard/tv/ui/control/MediaToolsPage.kt
+new file mode 100644
+index 0000000..80e9d64
+--- /dev/null
++++ b/app/src/main/java/app/orchard/tv/ui/control/MediaToolsPage.kt
+@@ -0,0 +1,112 @@
++package app.orchard.tv.ui.control
++
++import android.content.Intent
++import android.widget.Toast
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.Spacer
++import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.heightIn
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.rememberScrollState
++import androidx.compose.foundation.text.BasicText
++import androidx.compose.foundation.verticalScroll
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.DisposableEffect
++import androidx.compose.runtime.LaunchedEffect
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.setValue
++import androidx.compose.runtime.withFrameNanos
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.focus.FocusRequester
++import androidx.compose.ui.platform.LocalContext
++import androidx.compose.ui.res.stringResource
++import androidx.compose.ui.unit.dp
++import androidx.lifecycle.Lifecycle
++import androidx.lifecycle.LifecycleEventObserver
++import androidx.lifecycle.compose.LocalLifecycleOwner
++import app.orchard.tv.CcPage
++import app.orchard.tv.HomeViewModel
++import app.orchard.tv.Overlay
++import app.orchard.tv.R
++import app.orchard.tv.settings.Restricted
++import app.orchard.tv.system.LaunchFallback
++import app.orchard.tv.system.MediaAction
++import app.orchard.tv.system.MediaAppsStatus
++import app.orchard.tv.system.MediaShortcuts
++import app.orchard.tv.ui.home.MenuRow
++import app.orchard.tv.ui.theme.Glyph
++import app.orchard.tv.ui.theme.Type
++
++@Composable
++fun MediaToolsPage(vm: HomeViewModel, takeFocus: Boolean, onOpen: (Intent) -> Unit) {
++    val context = LocalContext.current
++    val lifecycle = LocalLifecycleOwner.current.lifecycle
++    var status by remember { mutableStateOf(MediaShortcuts.status(context)) }
++    // Refresh when returning from the client or installer, without a permanent polling loop.
++    DisposableEffect(context, lifecycle) {
++        val observer = LifecycleEventObserver { _, event ->
++            if (event == Lifecycle.Event.ON_RESUME) status = MediaShortcuts.status(context)
++        }
++        lifecycle.addObserver(observer)
++        onDispose { lifecycle.removeObserver(observer) }
++    }
++    MediaToolsContent(status, vm.network.vpn, takeFocus,
++        onBack = { vm.overlay = Overlay.ControlCenter(CcPage.Main) },
++        onAction = { action ->
++            vm.whenUnlocked {
++                // Do not provide an alternate way around Kids and Elders mode's allowed apps.
++                if (!Restricted.active) {
++                    val intent = MediaShortcuts.intent(context, action)
++                    if (intent == null) {
++                        val message = when (action) {
++                            MediaAction.AppleTv -> R.string.media_apple_missing
++                            MediaAction.Clash -> R.string.media_clash_missing
++                            else -> R.string.media_control_missing
++                        }
++                        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
++                    } else {
++                        LaunchFallback.arm(emptyList())
++                        onOpen(intent)
++                    }
++                }
++            }
++        },
++    )
++}
++
++@Composable
++internal fun MediaToolsContent(
++    status: MediaAppsStatus,
++    vpnActive: Boolean,
++    takeFocus: Boolean,
++    onBack: () -> Unit,
++    onAction: (MediaAction) -> Unit,
++) {
++    val first = remember { FocusRequester() }
++    LaunchedEffect(takeFocus) {
++        if (takeFocus) {
++            withFrameNanos { }
++            runCatching { first.requestFocus() }
++        }
++    }
++    Column(Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
++        MenuRow(Glyph.ChevronLeft, stringResource(R.string.media_tools_title), onClick = onBack, focusRequester = first)
++        BasicText(
++            stringResource(if (vpnActive) R.string.media_vpn_active else R.string.media_vpn_inactive),
++            style = Type.Caption, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
++        )
++        MenuRow(Glyph.Play, stringResource(R.string.media_apple_open),
++            onClick = { onAction(MediaAction.AppleTv) },
++            trailing = stringResource(if (status.appleTv) R.string.media_ready else R.string.media_unavailable))
++        MenuRow(Glyph.Globe, stringResource(R.string.media_clash_open),
++            onClick = { onAction(MediaAction.Clash) },
++            trailing = stringResource(if (status.clash) R.string.media_ready else R.string.media_unavailable))
++        MenuRow(Glyph.Power, stringResource(R.string.media_clash_start), onClick = { onAction(MediaAction.StartClash) })
++        MenuRow(Glyph.Shield, stringResource(R.string.media_clash_stop), onClick = { onAction(MediaAction.StopClash) })
++        Spacer(Modifier.height(8.dp))
++        BasicText(stringResource(R.string.media_first_connection), style = Type.Caption,
++            modifier = Modifier.padding(horizontal = 14.dp))
++    }
++}
+diff --git a/app/src/main/java/app/orchard/tv/update/Updates.kt b/app/src/main/java/app/orchard/tv/update/Updates.kt
+index 82f6519..df40945 100644
+--- a/app/src/main/java/app/orchard/tv/update/Updates.kt
++++ b/app/src/main/java/app/orchard/tv/update/Updates.kt
+@@ -85,6 +85,9 @@ object Updates {
+     private var checker: UpdateCheck? = null
+ 
+     fun init(context: Context) {
++        // This household build is signed locally. An upstream APK cannot update it and would
++        // remove the custom controls even if installed after an uninstall.
++        if (BuildConfig.LOCAL_EDITION) return
+         if (started) return
+         started = true
+         appContext = context.applicationContext
+@@ -126,7 +129,7 @@ object Updates {
+         })
+     }
+ 
+-    fun diagnostics(): String = if (!started) "not initialized" else
++    fun diagnostics(): String = if (BuildConfig.LOCAL_EDITION) "local edition; manual updates" else if (!started) "not initialized" else
+         "known=${prefs.getString("latest", null) ?: "unknown"}; notes=${notes.size}; ${checker?.diagnostics}"
+ 
+     /**
+@@ -211,7 +214,7 @@ object Updates {
+     private const val PACKAGE = "app.orchard.tv"
+ 
+     /** Whether this copy can update itself from the release at all. */
+-    fun canInstall(context: Context): Boolean = context.packageName == PACKAGE
++    fun canInstall(context: Context): Boolean = !BuildConfig.LOCAL_EDITION && context.packageName == PACKAGE
+ 
+     /**
+      * Downloads this flavor's APK of the latest release and installs it. Android 9 and later, a
+diff --git a/app/src/main/res/values-kk/media_tools.xml b/app/src/main/res/values-kk/media_tools.xml
+new file mode 100644
+index 0000000..30d4c83
+--- /dev/null
++++ b/app/src/main/res/values-kk/media_tools.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="media_local_setup">Бұл сіздің жеке нұсқаңыз. Басты экранды қоса берілген нұсқаулықпен баптаңыз. Жаңарту үшін жеке APK файлын қолданыңыз.</string>
++    <string name="media_tools_title">Медиа және желі</string>
++    <string name="media_apple_open">Apple TV ашу</string>
++    <string name="media_clash_open">Clash Meta ашу</string>
++    <string name="media_clash_start">Clash қосу</string>
++    <string name="media_clash_stop">Clash ажырату</string>
++    <string name="media_ready">Қолжетімді</string>
++    <string name="media_unavailable">Қолжетімсіз</string>
++    <string name="media_vpn_active">Жүйелік VPN: қосылған</string>
++    <string name="media_vpn_inactive">Жүйелік VPN: қосылмаған</string>
++    <string name="media_first_connection">Алдымен Clash ішінде профиль таңдап, қосылыңыз. Содан кейін осы батырмаларды қолданыңыз. VPN күйі қай қолданба қосылғанын көрсетпейді.</string>
++    <string name="media_apple_missing">Apple TV қолжетімсіз. Теледидар нұсқасы орнатылып, қосылғанын тексеріңіз.</string>
++    <string name="media_clash_missing">Clash Meta қолжетімсіз. Алдымен клиентті орнатып, баптаңыз.</string>
++    <string name="media_control_missing">Clash Meta жылдам басқаруы қолжетімсіз. Қосу не ажырату үшін клиентті ашыңыз.</string>
++</resources>
+diff --git a/app/src/main/res/values-ru/media_tools.xml b/app/src/main/res/values-ru/media_tools.xml
+new file mode 100644
+index 0000000..9a4e455
+--- /dev/null
++++ b/app/src/main/res/values-ru/media_tools.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="media_local_setup">Это ваша персональная версия. Настройте главный экран по прилагаемой инструкции. Для обновления используйте свой APK.</string>
++    <string name="media_tools_title">Медиа и сеть</string>
++    <string name="media_apple_open">Открыть Apple TV</string>
++    <string name="media_clash_open">Открыть Clash Meta</string>
++    <string name="media_clash_start">Подключить Clash</string>
++    <string name="media_clash_stop">Отключить Clash</string>
++    <string name="media_ready">Доступно</string>
++    <string name="media_unavailable">Недоступно</string>
++    <string name="media_vpn_active">Системный VPN: подключён</string>
++    <string name="media_vpn_inactive">Системный VPN: не подключён</string>
++    <string name="media_first_connection">Сначала выберите профиль и подключитесь в Clash. Затем используйте эти кнопки. Статус VPN не указывает подключённое приложение.</string>
++    <string name="media_apple_missing">Apple TV недоступен. Проверьте, что версия для ТВ установлена и включена.</string>
++    <string name="media_clash_missing">Clash Meta недоступен. Сначала установите и настройте клиент.</string>
++    <string name="media_control_missing">Быстрое управление Clash Meta недоступно. Откройте клиент для подключения или отключения.</string>
++</resources>
+diff --git a/app/src/main/res/values-uk/media_tools.xml b/app/src/main/res/values-uk/media_tools.xml
+new file mode 100644
+index 0000000..4cd2d1d
+--- /dev/null
++++ b/app/src/main/res/values-uk/media_tools.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="media_local_setup">Це ваша персональна версія. Налаштуйте головний екран за доданою інструкцією. Для оновлення використовуйте власний APK.</string>
++    <string name="media_tools_title">Медіа й мережа</string>
++    <string name="media_apple_open">Відкрити Apple TV</string>
++    <string name="media_clash_open">Відкрити Clash Meta</string>
++    <string name="media_clash_start">Підключити Clash</string>
++    <string name="media_clash_stop">Відключити Clash</string>
++    <string name="media_ready">Доступно</string>
++    <string name="media_unavailable">Недоступно</string>
++    <string name="media_vpn_active">Системний VPN: підключено</string>
++    <string name="media_vpn_inactive">Системний VPN: не підключено</string>
++    <string name="media_first_connection">Спочатку виберіть профіль і підключіться в Clash. Потім використовуйте ці кнопки. Стан VPN не визначає підключений застосунок.</string>
++    <string name="media_apple_missing">Apple TV недоступний. Перевірте, чи встановлена й увімкнена версія для ТВ.</string>
++    <string name="media_clash_missing">Clash Meta недоступний. Спочатку встановіть і налаштуйте клієнт.</string>
++    <string name="media_control_missing">Швидке керування Clash Meta недоступне. Відкрийте клієнт для підключення або відключення.</string>
++</resources>
+diff --git a/app/src/main/res/values-zh/media_tools.xml b/app/src/main/res/values-zh/media_tools.xml
+new file mode 100644
+index 0000000..b2d2aac
+--- /dev/null
++++ b/app/src/main/res/values-zh/media_tools.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="media_local_setup">这是你的定制版。请按配套安装说明完成桌面设置，后续使用定制安装包更新。</string>
++    <string name="media_tools_title">影音与网络</string>
++    <string name="media_apple_open">打开 Apple TV</string>
++    <string name="media_clash_open">打开 Clash Meta</string>
++    <string name="media_clash_start">连接 Clash</string>
++    <string name="media_clash_stop">断开 Clash</string>
++    <string name="media_ready">可打开</string>
++    <string name="media_unavailable">不可用</string>
++    <string name="media_vpn_active">系统 VPN：已连接</string>
++    <string name="media_vpn_inactive">系统 VPN：未连接</string>
++    <string name="media_first_connection">首次请在 Clash 中选择配置并连接一次，再使用这里的快捷按钮。系统 VPN 状态不能区分由哪个应用连接。</string>
++    <string name="media_apple_missing">未找到可打开的 Apple TV 应用，请确认已安装并启用电视版。</string>
++    <string name="media_clash_missing">未找到可打开的 Clash Meta，请先安装客户端并完成配置。</string>
++    <string name="media_control_missing">Clash Meta 的快捷控制入口不可用，请打开客户端连接或断开。</string>
++</resources>
+diff --git a/app/src/main/res/values/media_tools.xml b/app/src/main/res/values/media_tools.xml
+new file mode 100644
+index 0000000..f847fa2
+--- /dev/null
++++ b/app/src/main/res/values/media_tools.xml
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <string name="media_local_setup">This is your custom edition. Use its accompanying setup instructions to make it the home screen. Updates are installed from your custom APK.</string>
++    <string name="media_tools_title">Media &amp; network</string>
++    <string name="media_apple_open">Open Apple TV</string>
++    <string name="media_clash_open">Open Clash Meta</string>
++    <string name="media_clash_start">Start Clash</string>
++    <string name="media_clash_stop">Stop Clash</string>
++    <string name="media_ready">Available</string>
++    <string name="media_unavailable">Unavailable</string>
++    <string name="media_vpn_active">System VPN: connected</string>
++    <string name="media_vpn_inactive">System VPN: not connected</string>
++    <string name="media_first_connection">First select a profile and connect in Clash. After that, use the shortcuts here. System VPN status does not identify which app is connected.</string>
++    <string name="media_apple_missing">No usable Apple TV app was found. Check that the TV version is installed and enabled.</string>
++    <string name="media_clash_missing">No usable Clash Meta app was found. Install and configure the client first.</string>
++    <string name="media_control_missing">Clash Meta does not expose this shortcut. Open the client to connect or disconnect.</string>
++</resources>
+diff --git a/app/src/test/java/app/orchard/tv/system/MediaShortcutsTest.kt b/app/src/test/java/app/orchard/tv/system/MediaShortcutsTest.kt
+new file mode 100644
+index 0000000..2f57277
+--- /dev/null
++++ b/app/src/test/java/app/orchard/tv/system/MediaShortcutsTest.kt
+@@ -0,0 +1,104 @@
++package app.orchard.tv.system
++
++import android.content.ComponentName
++import android.content.Context
++import android.content.Intent
++import android.content.IntentFilter
++import android.content.pm.PackageManager
++import org.junit.Assert.*
++import org.junit.Test
++import org.junit.runner.RunWith
++import org.robolectric.RobolectricTestRunner
++import org.robolectric.RuntimeEnvironment
++import org.robolectric.Shadows.shadowOf
++import org.robolectric.annotation.Config
++
++@RunWith(RobolectricTestRunner::class)
++@Config(sdk = [28])
++class MediaShortcutsTest {
++    private val context: Context = RuntimeEnvironment.getApplication()
++    private val pm = shadowOf(context.packageManager)
++    private val apple = "com.apple.atve.androidtv.appletv"
++    private val control = ComponentName(MediaShortcuts.CLASH_PACKAGE, MediaShortcuts.CLASH_CONTROL)
++
++    @Test fun missingClientsHaveNoActionOrFalseReadyStatus() {
++        for (action in MediaAction.entries) assertNull(MediaShortcuts.intent(context, action))
++        assertEquals(MediaAppsStatus(), MediaShortcuts.status(context))
++    }
++
++    @Test fun applePrefersItsTvEntryOverItsPhoneEntry() {
++        addLauncher(apple, "Phone", Intent.CATEGORY_LAUNCHER)
++        val tv = addLauncher(apple, "Tv", Intent.CATEGORY_LEANBACK_LAUNCHER)
++        assertEquals(tv, MediaShortcuts.intent(context, MediaAction.AppleTv)?.component)
++    }
++
++    @Test fun disabledTvEntryFallsBackToUsableRegularEntry() {
++        val regular = addLauncher(apple, "Regular", Intent.CATEGORY_LAUNCHER)
++        val tv = addLauncher(apple, "Tv", Intent.CATEGORY_LEANBACK_LAUNCHER)
++        context.packageManager.setComponentEnabledSetting(tv, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0)
++        assertEquals(regular, MediaShortcuts.intent(context, MediaAction.AppleTv)?.component)
++    }
++
++    @Test fun existingSonyAppleTvVariantCanBeOpened() {
++        val tv = addLauncher("com.apple.atve.sony.appletv", "Tv", Intent.CATEGORY_LEANBACK_LAUNCHER)
++        assertEquals(tv, MediaShortcuts.intent(context, MediaAction.AppleTv)?.component)
++    }
++
++    @Test fun disabledApplicationIsNotReportedAsReady() {
++        addLauncher(MediaShortcuts.CLASH_PACKAGE, "Main", Intent.CATEGORY_LEANBACK_LAUNCHER)
++        context.packageManager.setApplicationEnabledSetting(MediaShortcuts.CLASH_PACKAGE, PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER, 0)
++        assertFalse(MediaShortcuts.status(context).clash)
++    }
++
++    @Test fun commandsAreExplicitAndIdempotentNotToggles() {
++        addControl()
++        for ((action, command) in listOf(MediaAction.StartClash to "START_CLASH", MediaAction.StopClash to "STOP_CLASH")) {
++            val intent = requireNotNull(MediaShortcuts.intent(context, action))
++            assertEquals(control, intent.component)
++            assertEquals("${MediaShortcuts.CLASH_PACKAGE}.action.$command", intent.action)
++            assertEquals(Intent.FLAG_ACTIVITY_NEW_TASK, intent.flags)
++            assertNull(intent.data)
++            assertNull(intent.extras)
++        }
++    }
++
++    @Test fun privateOrDisabledControlIsNeverInvoked() {
++        val info = addControl()
++        info.exported = false
++        assertNull(MediaShortcuts.intent(context, MediaAction.StartClash))
++        info.exported = true
++        context.packageManager.setComponentEnabledSetting(control, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, 0)
++        assertNull(MediaShortcuts.intent(context, MediaAction.StopClash))
++    }
++
++    @Test fun permissionProtectedControlIsNotReportedAsUsable() {
++        addControl().permission = "test.permission.PRIVATE_CONTROL"
++        assertNull(MediaShortcuts.intent(context, MediaAction.StartClash))
++    }
++
++    @Test fun anUnrelatedHandlerCannotReceiveClashCommands() {
++        val component = addLauncher("test.other.vpn", "Control", Intent.CATEGORY_LAUNCHER)
++        pm.addIntentFilterForActivity(component, IntentFilter("${MediaShortcuts.CLASH_PACKAGE}.action.START_CLASH"))
++        assertNull(MediaShortcuts.intent(context, MediaAction.StartClash))
++    }
++
++    @Test fun aLaunchableClientWithoutControlApiStillOpensNormally() {
++        val component = addLauncher(MediaShortcuts.CLASH_PACKAGE, "Main", Intent.CATEGORY_LEANBACK_LAUNCHER)
++        assertTrue(MediaShortcuts.status(context).clash)
++        assertEquals(component, MediaShortcuts.intent(context, MediaAction.Clash)?.component)
++        assertNull(MediaShortcuts.intent(context, MediaAction.StartClash))
++    }
++
++    private fun addControl() = pm.addActivityIfNotPresent(control).apply {
++        enabled = true; exported = true; applicationInfo.enabled = true
++    }
++
++    private fun addLauncher(pkg: String, name: String, category: String): ComponentName {
++        val component = ComponentName(pkg, "$pkg.$name")
++        pm.addActivityIfNotPresent(component).apply {
++            enabled = true; exported = true; applicationInfo.enabled = true
++        }
++        pm.addIntentFilterForActivity(component, IntentFilter(Intent.ACTION_MAIN).apply { addCategory(category) })
++        return component
++    }
++}
+diff --git a/app/src/test/java/app/orchard/tv/ui/control/MediaToolsPageTest.kt b/app/src/test/java/app/orchard/tv/ui/control/MediaToolsPageTest.kt
+new file mode 100644
+index 0000000..d54a806
+--- /dev/null
++++ b/app/src/test/java/app/orchard/tv/ui/control/MediaToolsPageTest.kt
+@@ -0,0 +1,108 @@
++package app.orchard.tv.ui.control
++
++import android.view.KeyEvent
++import android.view.View
++import androidx.activity.ComponentActivity
++import androidx.activity.compose.setContent
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.foundation.layout.width
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.platform.LocalView
++import androidx.compose.ui.test.assertIsDisplayed
++import androidx.compose.ui.test.getUnclippedBoundsInRoot
++import androidx.compose.ui.test.junit4.createEmptyComposeRule
++import androidx.compose.ui.test.onNodeWithText
++import androidx.compose.ui.unit.dp
++import app.orchard.tv.R
++import app.orchard.tv.system.MediaAction
++import app.orchard.tv.system.MediaAppsStatus
++import org.junit.After
++import org.junit.Assert.*
++import org.junit.Rule
++import org.junit.Test
++import org.junit.runner.RunWith
++import org.robolectric.Robolectric
++import org.robolectric.RobolectricTestRunner
++import org.robolectric.RuntimeEnvironment
++import org.robolectric.android.controller.ActivityController
++import org.robolectric.annotation.Config
++
++@RunWith(RobolectricTestRunner::class)
++@Config(sdk = [28], qualifiers = "zh-rCN-w960dp-h540dp-land-xhdpi")
++class MediaToolsPageTest {
++    @get:Rule val compose = createEmptyComposeRule()
++    private var host: ActivityController<ComponentActivity>? = null
++    private lateinit var view: View
++    private val actions = mutableListOf<MediaAction>()
++    private var back = 0
++    private fun text(id: Int) = RuntimeEnvironment.getApplication().getString(id)
++
++    @After fun close() { compose.runOnUiThread { host?.close() } }
++
++    @Test fun remoteCanReachEachCommandExactlyOnce() {
++        mount()
++        for (action in MediaAction.entries) {
++            tap(KeyEvent.KEYCODE_DPAD_DOWN)
++            tap(KeyEvent.KEYCODE_DPAD_CENTER)
++            assertEquals(action, actions.last())
++        }
++        assertEquals(MediaAction.entries.toList(), actions)
++        repeat(4) { tap(KeyEvent.KEYCODE_DPAD_UP) }
++        tap(KeyEvent.KEYCODE_DPAD_CENTER)
++        assertEquals(1, back)
++    }
++
++    @Test fun chineseLabelsAndSetupHintFitTheTvPanel() {
++        mount()
++        for (id in listOf(R.string.media_tools_title, R.string.media_apple_open,
++            R.string.media_clash_open, R.string.media_clash_start, R.string.media_clash_stop,
++            R.string.media_first_connection)) {
++            val node = compose.onNodeWithText(text(id)).assertIsDisplayed()
++            val bounds = node.getUnclippedBoundsInRoot()
++            assertTrue("$id below screen: $bounds", bounds.bottom <= 516.dp)
++            assertTrue("$id outside screen: $bounds", bounds.left >= 0.dp && bounds.right <= 936.dp)
++        }
++    }
++
++    @Test fun vpnStatusDoesNotClaimClashIsConnected() {
++        mount(vpnActive = true)
++        compose.onNodeWithText(text(R.string.media_vpn_active)).assertIsDisplayed()
++        // Merely seeing a VPN must not dispatch a command or claim Apple TV is playable.
++        assertTrue(actions.isEmpty())
++    }
++
++    private fun mount(vpnActive: Boolean = false) {
++        compose.mainClock.autoAdvance = false
++        compose.runOnUiThread {
++            val controller = Robolectric.buildActivity(ComponentActivity::class.java)
++            host = controller
++            controller.setup()
++            controller.get().setContent {
++                view = LocalView.current
++                Box(Modifier.size(960.dp, 540.dp).padding(top = 24.dp, end = 32.dp), contentAlignment = Alignment.TopEnd) {
++                    Box(Modifier.width(300.dp).padding(16.dp)) {
++                        MediaToolsContent(MediaAppsStatus(true, true), vpnActive, true,
++                            onBack = { back++ }, onAction = { actions += it })
++                    }
++                }
++            }
++            controller.windowFocusChanged(true)
++        }
++        settle()
++    }
++
++    private fun settle() {
++        repeat(30) { compose.mainClock.advanceTimeByFrame(); compose.waitForIdle() }
++    }
++
++    private fun tap(code: Int) {
++        compose.runOnUiThread {
++            view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
++            view.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
++        }
++        settle()
++    }
++}
+diff --git a/app/src/test/java/app/orchard/tv/update/LocalEditionTest.kt b/app/src/test/java/app/orchard/tv/update/LocalEditionTest.kt
+new file mode 100644
+index 0000000..5980d83
+--- /dev/null
++++ b/app/src/test/java/app/orchard/tv/update/LocalEditionTest.kt
+@@ -0,0 +1,21 @@
++package app.orchard.tv.update
++
++import org.junit.Assert.*
++import org.junit.Test
++import org.junit.runner.RunWith
++import org.robolectric.RobolectricTestRunner
++import org.robolectric.RuntimeEnvironment
++import org.robolectric.annotation.Config
++
++@RunWith(RobolectricTestRunner::class)
++@Config(sdk = [28])
++class LocalEditionTest {
++    @Test fun customBuildDoesNotOfferAnIncompatibleUpstreamUpdate() {
++        val context = RuntimeEnvironment.getApplication()
++        Updates.init(context)
++        Updates.checkIfStale(force = true)
++        assertNull(Updates.available)
++        assertFalse(Updates.canInstall(context))
++        assertEquals("local edition; manual updates", Updates.diagnostics())
++    }
++}

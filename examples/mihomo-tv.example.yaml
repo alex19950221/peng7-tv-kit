@@ -1,0 +1,48 @@
+# Documentation example only. Replace values in an ignored local copy.
+mixed-port: 7890
+allow-lan: false
+bind-address: 127.0.0.1
+mode: rule
+log-level: info
+ipv6: false
+
+proxies:
+  - name: Example-JP-HY2
+    type: hysteria2
+    server: jp.example.com
+    port: 443
+    password: CHANGE_ME_JP
+    sni: jp.example.com
+    skip-cert-verify: false
+  - name: Example-US-HY2
+    type: hysteria2
+    server: us.example.com
+    port: 443
+    password: CHANGE_ME_US
+    sni: us.example.com
+    skip-cert-verify: false
+
+proxy-groups:
+  - name: YouTube-JP
+    type: select
+    proxies: [Example-JP-HY2]
+  - name: AppleTV-US
+    type: select
+    proxies: [Example-US-HY2]
+
+rules:
+  - DOMAIN-SUFFIX,youtube.com,YouTube-JP
+  - DOMAIN-SUFFIX,youtube-nocookie.com,YouTube-JP
+  - DOMAIN-SUFFIX,youtu.be,YouTube-JP
+  - DOMAIN-SUFFIX,googlevideo.com,YouTube-JP
+  - DOMAIN-SUFFIX,ytimg.com,YouTube-JP
+  - DOMAIN,youtubei.googleapis.com,YouTube-JP
+  - DOMAIN,youtube.googleapis.com,YouTube-JP
+  - DOMAIN-SUFFIX,tv.apple.com,AppleTV-US
+  - DOMAIN,hls-amt.itunes.apple.com,AppleTV-US
+  - DOMAIN,hls.itunes.apple.com,AppleTV-US
+  - DOMAIN,np-edge.itunes.apple.com,AppleTV-US
+  - DOMAIN,play-edge.itunes.apple.com,AppleTV-US
+  - DOMAIN,tv.applemusic.com,AppleTV-US
+  - DOMAIN,uts-api.itunes.apple.com,AppleTV-US
+  - MATCH,DIRECT
